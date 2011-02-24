@@ -32,18 +32,7 @@ class HomePage(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_values))
 
-class AddSchedule(webapp.RequestHandler):
-    def post(self):
-        if not users.get_current_user():
-            self.redirect('/')
-            return
-            
-        new_schedule = Schedule()
-        new_schedule.user = users.get_current_user()
-        new_schedule.name = self.request.get('name')
-        new_schedule.put()
-        self.redirect('/schedule/' + str(new_schedule.key()))
-        
+
 class ViewSchedule(webapp.RequestHandler):
     def get(self, schedule_key):
         schedule = Schedule.get(db.Key(schedule_key))
@@ -61,10 +50,35 @@ class ViewSchedule(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), 'schedule.html')
         self.response.out.write(template.render(path, template_values))
 
+class AddSchedule(webapp.RequestHandler):
+    def post(self):
+        if not users.get_current_user():
+            self.redirect('/')
+            return
+            
+        new_schedule = Schedule()
+        new_schedule.user = users.get_current_user()
+        new_schedule.name = self.request.get('name')
+        new_schedule.put()
+        self.redirect('/schedule/' + str(new_schedule.key()))
 
+class AddScheduleItem(webapp.RequestHandler):
+    def post(self, schedule_key):
+        if not users.get_current_user():
+            self.redirect('/')
+            return
+        schedule = Schedule.get(db.Key(schedule_key))
+        if schedule.user != users.get_current_user():
+            self.redirect('/')
+            return
+            
+        
+        self.redirect('/schedule/' + str(schedule.key()))
+        
 application = webapp.WSGIApplication(
                                      [('/', HomePage),
                                       ('/add_schedule', AddSchedule),
+                                      ('/add_schedule_item/(.*)', AddScheduleItem),
                                       ('/schedule/(.*)', ViewSchedule)],
                                      debug=True)
 

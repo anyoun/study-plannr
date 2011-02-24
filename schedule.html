@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+  <body>
+  
+  <h5>{{ schedule.name }}</h5>
+
+	{% for i in items %}
+		<div>{{ i.name|escape }}</div>
+	{% endfor %}
+	<form action="/add_schedule_item" method="post">
+		<div>
+			<input type="text" name="content"></input>
+			<input type="submit" value="Add"></input>
+		</div>
+	</form>
+    
+    <a href="/">Home</a>
+	<a href="{{ logout_link }}">Logout</a>
+
+  </body>
+</html>

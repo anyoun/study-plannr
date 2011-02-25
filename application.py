@@ -20,18 +20,14 @@ class ScheduleItem(db.Model):
 
 class HomePage(webapp.RequestHandler):
     def get(self):
-        schedules = Schedule.all()
-        
         template_values = {
-            'schedules' : schedules,
+            'schedules' : Schedule.all().run(),
             'is_loggedin' : users.get_current_user() is not None,
             'login_link' : users.create_login_url(self.request.uri),
             'logout_link' : users.create_logout_url(self.request.uri),
-        }
-        
+        }        
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_values))
-
 
 class ViewSchedule(webapp.RequestHandler):
     def get(self, schedule_key):
@@ -39,46 +35,49 @@ class ViewSchedule(webapp.RequestHandler):
         if schedule.user != users.get_current_user():
             self.redirect('/')
             return
-            
         items = schedule.scheduleitem_set
-        
         template_values = {
             'schedule' : schedule,
             'items' : items,
-        }
-        
+        }        
         path = os.path.join(os.path.dirname(__file__), 'schedule.html')
         self.response.out.write(template.render(path, template_values))
 
 class AddSchedule(webapp.RequestHandler):
     def post(self):
-        if not users.get_current_user():
+        user = users.get_current_user()
+        if not user:
             self.redirect('/')
-            return
-            
+            return            
         new_schedule = Schedule()
-        new_schedule.user = users.get_current_user()
+        new_schedule.user = user
         new_schedule.name = self.request.get('name')
         new_schedule.put()
         self.redirect('/schedule/' + str(new_schedule.key()))
 
 class AddScheduleItem(webapp.RequestHandler):
     def post(self, schedule_key):
-        if not users.get_current_user():
+        user = users.get_current_user()
+        if not user:
             self.redirect('/')
             return
         schedule = Schedule.get(db.Key(schedule_key))
-        if schedule.user != users.get_current_user():
+        if schedule.user != user:
             self.redirect('/')
             return
-            
-        
+        last_item = schedule.scheduleitem_set.Orderby('ordinal')
+        new_item = ScheduleItem()
+        new_item.schedule = schedule
+        new_item.name = self.request.get('name')
+        new_item.time_weight = 1.0
+        new_item.ordinal = last_item.ordinal + 1
+        new_item.put()
         self.redirect('/schedule/' + str(schedule.key()))
         
 application = webapp.WSGIApplication(
                                      [('/', HomePage),
                                       ('/add_schedule', AddSchedule),
-                                      ('/add_schedule_item/(.*)', AddScheduleItem),
+                                      ('/schedule/(.*)/add', AddScheduleItem),
                                       ('/schedule/(.*)', ViewSchedule)],
                                      debug=True)
 

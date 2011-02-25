@@ -7,11 +7,15 @@
   <h5>{{ schedule.name }}</h5>
 
 	{% for i in items %}
-		<div>{{ i.name|escape }}</div>
+		<div>Subject: {{ i.name|escape }}
+    		<a href="/schedule/{{ schedule.key }}/{{ i.key }}/more">More</a>
+    		<a href="/schedule/{{ schedule.key }}/{{ i.key }}/less">Less</a>
+    		<a href="/schedule/{{ schedule.key }}/{{ i.key }}/remove">Remove</a>
+    	</div>
 	{% endfor %}
-	<form action="/add_schedule_item" method="post">
+	<form action="/schedule/{{ schedule.key }}/add" method="post">
 		<div>
-			<input type="text" name="content"></input>
+			<input type="text" name="name"></input>
 			<input type="submit" value="Add"></input>
 		</div>
 	</form>

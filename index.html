@@ -8,10 +8,12 @@
 	    <a href="{{ login_link }}">Login</a>
     {% else %}
         {% for s in schedules %}
-    		<blockquote>{{ s.name|escape }}</blockquote>
+    		<div>Schedule: {{ s.name|escape }}
+    			<a href="/schedule/{{ s.key }}">Edit</a>
+    		</div>
 	    {% endfor %}
 		<form action="/add_schedule" method="post">
-			<div><input type="text" name="content" ></input></div>
+			<div><input type="text" name="name" ></input></div>
 			<div><input type="submit" value="Add Schedule"></input></div>
 		</form>
 		<a href="{{ logout_link }}">Logout</a>

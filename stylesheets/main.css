@@ -2,3 +2,7 @@ body {
   font-family: Verdana, Helvetica, sans-serif;
   background-color: #DDDDDD;
 }
+
+.subject_name {
+    font-weight: bold;
+}

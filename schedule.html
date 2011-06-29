@@ -1,40 +1,72 @@
 <html>
   <head>
-    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
-    <script type="application/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+{% include "shared_head.html" %}
   </head>
   <body>
   
-  <h5>{{ schedule.name }}</h5>
+	<script>
+		$(document).ready(function() {
+			$('.subject-name').editable('/schedule/{{ schedule.key }}/rename-item', {
+				tooltip	  : 'Click to change subject name.',
+         		indicator : '<div class="subject-name-loading-placeholder"><img src="/images/ajax-loader.gif"></div>',
+         		cssclass  : 'subject-name-editing',
+         		onblur    : 'submit',
+			});
+			$('.schedule-name').editable('/schedule/{{ schedule.key }}/rename', {
+				tooltip	  : 'Click to change schedule name.',
+         		indicator : '<div class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></div>',
+         		cssclass  : 'schedule-name-editing',
+         		onblur    : 'submit',
+			});
+		});  
+	</script>
+	
+	{% include "header_bar.html" %}
+  
+  <h3 class="schedule-name">{{ schedule.name }}</h3>
 
-	<div style="height: 300px">
-	{% for i in items %}
-		<div style="background-color: {{ i.color }}">
-			Subject: <span class="subject_name">{{ i.name|escape }}</span>
-    		<a href="/schedule/{{ schedule.key }}/{{ i.key }}/more">More</a>
-    		<a href="/schedule/{{ schedule.key }}/{{ i.key }}/less">Less</a>
-    		<a href="/schedule/{{ schedule.key }}/{{ i.key }}/remove">Remove</a>
-    	{{ i.ordinal }}
-    	{{ i.time_weight }}
-    	</div>
-	{% endfor %}
+	<div id="right-container">
+		<h4>Options</h4>
+		<div>
+			Enable 15 minute breaks.
+		</div>
 	</div>
-	
-	<p/>
-	<div style="height: 200px; width: 100px">
-	<div style="height: 150%; background-color: Red">abc</div>
-	<div style="height: 50%; background-color: Blue">def</div>
+
+	<div id="left-container">
+	<div class="bar-container">
+		{% for i in items %}
+			<div class="item-row" style="height: {{ i.pct }}%;">
+				<div class="color-bar" style="background-color: {{ i.get_color }};">
+					&nbsp;
+				</div>
+				<div class="item-text">
+					<div class="start-time">{{ i.start_time|time:"P" }}</div>
+					<div id="subject-name-{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
+					<div class="subject-links">
+						<a href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
+						<a href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
+						<a href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+		<div style="float:left;">
+			<div class="start-time" style="margin-left: 5px">
+			{{ end_time|time:"P" }}
+			</div>
+		</div>
 	</div>
-	
+	<br />
+	<div id="add-item-container">
 	<form action="/schedule/{{ schedule.key }}/add" method="post">
 		<div>
-			<input type="text" name="name"></input>
-			<input type="submit" value="Add"></input>
+			<label for="add-item-name">Add Subject:</label>
+			<input type="text" id="add-item-name" name="name" class="name-textbox"></input>
+			<input type="submit" id="add-item-button" value="Add"></input>
 		</div>
 	</form>
-    
-    <a href="/">Home</a>
-	<a href="{{ logout_link }}">Logout</a>
+	</div>
+	</div>
 
   </body>
 </html>

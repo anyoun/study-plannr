@@ -1,22 +1,55 @@
 <html>
   <head>
-    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+{% include "shared_head.html" %}
   </head>
   <body>
+  
+  	<script>
+		$(document).ready(function() {
+			{% for s in schedules %}
+			$('#{{s.key}}').editable('/schedule/{{ s.key }}/rename', {
+				tooltip	  : 'Click to change schedule name.',
+         		indicator : '<span class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></span>',
+         		cssclass  : 'schedule-name-editing',
+         		style	  : 'display: inline',
+         		onblur    : 'submit',
+			});
+			{% endfor %}
+		});  
+	</script>
+  
+	{% include "header_bar.html" %}
 
 	{% if not is_loggedin %}
 	    <a href="{{ login_link }}">Login</a>
     {% else %}
+    	<h3>Schedules:</h3>
+    	<ul class="schedule-list">
+    	{% if schedules %}
         {% for s in schedules %}
-    		<div>Schedule: {{ s.name|escape }}
+    		<li>
+    			<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>
     			<a href="/schedule/{{ s.key }}">Edit</a>
-    		</div>
+    			<form class="link-form" action="/schedule/{{ s.key }}/remove" method="post">
+    				<input class="link-button" type="submit" value="Remove"></input>
+    			</form>
+    		</li>
 	    {% endfor %}
-		<form action="/add_schedule" method="post">
-			<div><input type="text" name="name" ></input></div>
-			<div><input type="submit" value="Add Schedule"></input></div>
-		</form>
-		<a href="{{ logout_link }}">Logout</a>
+	    {% else %}
+    		No schedules yet.
+    	{% endif %}
+	    </ul>
+	    <br />
+	    <br />
+	    <div id="add-schedule-container">
+			<form action="/add_schedule" method="post">
+				<div>
+					<label for="add-schedule-name">Add Schedule:</label>
+					<input type="text" name="name" id="add-schedule-name" class="name-textbox"></input>
+					<input type="submit" value="Add" id="add-schedule-button"></input>
+				</div>
+			</form>
+		</div>
     {% endif %}
 
   </body>

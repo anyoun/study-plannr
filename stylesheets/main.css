@@ -1,8 +1,135 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+a {
+	color: #0000FF;
+}
+
 body {
   font-family: Verdana, Helvetica, sans-serif;
   background-color: #DDDDDD;
+  font-size: 100%;
 }
 
-.subject_name {
+#header-bar {
+	border-bottom: solid gray 1px;
+	font-size: 66%;
+	padding: 1px;
+}
+#header-bar-right {
+	float: right;
+}
+
+h3 {
+	margin: 1em;
+}
+
+.schedule-name {
+	border: 1px solid transparent;
+}
+.schedule-name-editing {
+    
+}
+.schedule-name-loading-placeholder {
+    height: 1em;
+}
+.schedule-name:hover, .subject-name:hover {
+    background-color: #FFF569;
+    border: 1px dotted #888888;
+}
+
+div.bar-container {
+	height: 75%;
+	margin-left: 1em;
+	margin-top: 1em;
+}
+
+div.item-row {
+	padding-top: 1px;
+}
+
+.subject-name {
     font-weight: bold;
+    width: 15em;
+    border: 1px solid transparent;
+}
+.subject-name-editing {
+    width: 15em;
+}
+.subject-name-loading-placeholder {
+    width: 15em;
+    height: 1em;
+}
+
+
+.subject-links {
+    font-size: x-small;
+}
+div.item-text {
+	float: left;
+	margin-left: 5px;
+}
+
+div.start-time {
+	position: relative;
+	top: -.5em;
+}
+
+div.color-bar {
+	width: 2em;
+	float: left;
+	height: 100%;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	border-top: 1px solid black;
+}
+
+#add-schedule-container,
+#add-item-container {
+	clear: both;
+	margin: 1em;
+}
+
+#add-schedule-container label,
+#add-item-container label {
+	font-weight: bold;
+}
+.name-textbox {
+	border: 1px solid #888888;
+	background: white;
+	padding: .25em;
+	width: 20em;
+}
+#add-item-button {
+	
+}
+
+.schedule-list {
+	margin-left: 2em;
+	list-style-type: none;
+}
+.schedule-list li {
+	margin: .5em;
+}
+
+.link-form {
+	display: inline;
+}
+.link-button {
+	border: none;
+	color: blue;
+	background: transparent;
+	color: #0000FF;
+	text-decoration: underline;
+	cursor: hand;
+	font-size: 100%;
+}
+
+#right-container {
+	float: right;
+	border: solid 1px black;
+}
+#left-container {
 }

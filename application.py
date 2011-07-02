@@ -106,6 +106,9 @@ class ViewSchedule(webapp.RequestHandler):
             current_time = ci.end_time
             ci.ordinal = i.ordinal
             calc_items.append(ci)
+        calc_items[-1].end_time = end_time
+        current_time = end_time
+        
         has_user = users.get_current_user() is not None
         template_values = {
             'schedule' : schedule,

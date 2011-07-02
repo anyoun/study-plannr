@@ -1,9 +1,8 @@
 <div id="header-bar">
-<a href="/">Medder Schedule</a>
+<a class="logo-link" href="/">StudyPlannr</a>
 <div id="header-bar-right">
 {% if is_loggedin %}
 Signed in as {{ user_name }}
-|
 <form class="link-form" action="{{logout_link}}" method="get">
 	<input class="link-button" type="submit" value="Logout"></input>
 </form>

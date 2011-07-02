@@ -1,6 +1,16 @@
+@font-face {
+	font-family: Prociono;
+	src: url('/stylesheets/prociono/Prociono.otf');
+}
+@font-face {
+	font-family: Junction;
+	src: url('/stylesheets/junction/Junction 02.otf');
+}
+
 * {
 	margin: 0;
 	padding: 0;
+	color: black;
 }
 
 a {
@@ -9,17 +19,35 @@ a {
 
 body {
   font-family: Verdana, Helvetica, sans-serif;
-  background-color: #DDDDDD;
+  /*background-color: #DDDDDD;*/
+  background-color:  white;
   font-size: 100%;
 }
 
+.clearer {
+	clear: both;
+}
+
+a.logo-link {
+	color: black;
+	text-decoration: none;
+	font-family: Prociono, Arial;
+	font-size: 200%;
+}
+a.logo-link:hover {
+	text-decoration: underline;
+	color: #0000FF;
+}
+
+
 #header-bar {
-	border-bottom: solid gray 1px;
-	font-size: 66%;
-	padding: 1px;
+
 }
 #header-bar-right {
+	font-size: 66%;
 	float: right;
+	background-color: #DDDDDD;
+	border: 1px solid #DDDDDD;
 }
 
 h3 {
@@ -28,12 +56,13 @@ h3 {
 
 .schedule-name {
 	border: 1px solid transparent;
+	height: 1.2em;
 }
 .schedule-name-editing {
-    
+    height: 1.2em;
 }
 .schedule-name-loading-placeholder {
-    height: 1em;
+    height: 1.2em;
 }
 .schedule-name:hover, .subject-name:hover {
     background-color: #FFF569;
@@ -41,7 +70,7 @@ h3 {
 }
 
 div.bar-container {
-	height: 75%;
+	height: 40em;
 	margin-left: 1em;
 	margin-top: 1em;
 }
@@ -53,6 +82,7 @@ div.item-row {
 .subject-name {
     font-weight: bold;
     width: 15em;
+	height: 1em;
     border: 1px solid transparent;
 }
 .subject-name-editing {
@@ -88,8 +118,7 @@ div.color-bar {
 
 #add-schedule-container,
 #add-item-container {
-	clear: both;
-	margin: 1em;
+	/*clear: both;*/
 }
 
 #add-schedule-container label,
@@ -100,10 +129,13 @@ div.color-bar {
 	border: 1px solid #888888;
 	background: white;
 	padding: .25em;
-	width: 20em;
+	width: 15em;
+}
+#add-item-container {
+	/*width: 40em;*/
 }
 #add-item-button {
-	
+	width: 3em;
 }
 
 .schedule-list {
@@ -127,9 +159,21 @@ div.color-bar {
 	font-size: 100%;
 }
 
+#columns-container {
+	width: 40em;
+}
 #right-container {
-	float: right;
-	border: solid 1px black;
+	border: solid 1px #DDDDDD;
+	width: auto;
+	margin-left: 50%;
+	padding: 1em;
 }
 #left-container {
+	float: left;
+	width: 50%;
+}
+
+#options-container {
+	font-size: 75%;
+	padding: .5em;
 }

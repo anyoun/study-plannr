@@ -18,55 +18,85 @@
          		cssclass  : 'schedule-name-editing',
          		onblur    : 'submit',
 			});
-		});  
+			
+			if( window.webkitNotifications ) {
+				$('#check-enable-notifications').click(function(){
+					if($('#check-enable-notifications').attr('checked')) {
+						var callback = function() {
+							var popup = window.webkitNotifications.createNotification("/images/logo.png", "title", "body");
+							popup.show();
+							window.setTimeout(function() { popup.cancel(); }, 1000 );
+						}
+						if( window.webkitNotifications.checkPermission() != 0 ) {
+							window.webkitNotifications.requestPermission(callback);
+						} else {
+							callback();
+						}
+					}
+				});
+			}
+		});
 	</script>
 	
 	{% include "header_bar.html" %}
   
   <h3 class="schedule-name">{{ schedule.name }}</h3>
+	
+	<div id="columns-container">
 
-	<div id="right-container">
-		<h4>Options</h4>
-		<div>
-			Enable 15 minute breaks.
-		</div>
-	</div>
-
-	<div id="left-container">
-	<div class="bar-container">
-		{% for i in items %}
-			<div class="item-row" style="height: {{ i.pct }}%;">
-				<div class="color-bar" style="background-color: {{ i.get_color }};">
-					&nbsp;
-				</div>
-				<div class="item-text">
-					<div class="start-time">{{ i.start_time|time:"P" }}</div>
-					<div id="subject-name-{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
-					<div class="subject-links">
-						<a href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
-						<a href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
-						<a href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
+		<div id="left-container">	
+			<div class="bar-container">
+				{% for i in items %}
+					<div class="item-row" style="height: {{ i.pct }}%;">
+						<div class="color-bar" style="background-color: {{ i.get_color }};">
+							&nbsp;
+						</div>
+						<div class="item-text">
+							<div class="start-time">{{ i.start_time|time:"P" }}</div>
+							<div id="subject-name-{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
+							<div class="subject-links">
+								<a href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
+								<a href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
+								<a href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
+							</div>
+						</div>
+					</div>
+				{% endfor %}
+				<div style="float:left;">
+					<div class="start-time" style="margin-left: 5px">
+					{{ end_time|time:"P" }}
 					</div>
 				</div>
 			</div>
-		{% endfor %}
-		<div style="float:left;">
-			<div class="start-time" style="margin-left: 5px">
-			{{ end_time|time:"P" }}
+		</div>
+		
+		<div id="right-container">
+			<form id="add-item-container" action="/schedule/{{ schedule.key }}/add" method="post">
+				<label for="add-item-name">Add Subject</label>
+				<input type="text" id="add-item-name" name="name" class="name-textbox"></input>
+				<input type="submit" id="add-item-button" value="Add"></input>
+				<!-- <div class="clearer" /> -->
+			</form>
+			
+			<br />
+			
+			<h4>Options</h4>
+			<div id="options-container">
+				<div>
+					<input type="checkbox" id="check-enable-breaks" name="enable-breaks" class="options-checkbox"></input>
+					<label for="check-enable-breaks">Enable breaks between subjects.</label>
+				</div>
+				
+				<div>
+					<input type="checkbox" id="check-enable-notifications" name="enable-notifications" class="options-checkbox"></input>
+					<label for="check-enable-notifications">Enable desktop notifications when it's time to change subjects.</label>
+				</div>
 			</div>
+			
+			<br />
 		</div>
+	
 	</div>
-	<br />
-	<div id="add-item-container">
-	<form action="/schedule/{{ schedule.key }}/add" method="post">
-		<div>
-			<label for="add-item-name">Add Subject:</label>
-			<input type="text" id="add-item-name" name="name" class="name-textbox"></input>
-			<input type="submit" id="add-item-button" value="Add"></input>
-		</div>
-	</form>
-	</div>
-	</div>
-
+	
   </body>
 </html>

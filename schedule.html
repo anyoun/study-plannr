@@ -12,91 +12,134 @@
          		cssclass  : 'subject-name-editing',
          		onblur    : 'submit',
 			});
-			$('.schedule-name').editable('/schedule/{{ schedule.key }}/rename', {
+			$('.schedule-name').editable('/schedule/{{ schedule.key }}/edit', {
 				tooltip	  : 'Click to change schedule name.',
          		indicator : '<div class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></div>',
          		cssclass  : 'schedule-name-editing',
          		onblur    : 'submit',
+				name	  : 'name',
 			});
 			
 			if( window.webkitNotifications ) {
 				$('#check-enable-notifications').click(function(){
 					if($('#check-enable-notifications').attr('checked')) {
-						var callback = function() {
+						var gotPermissionsCallback = function() {
 							var popup = window.webkitNotifications.createNotification("/images/logo.png", "title", "body");
 							popup.show();
 							window.setTimeout(function() { popup.cancel(); }, 1000 );
 						}
 						if( window.webkitNotifications.checkPermission() != 0 ) {
-							window.webkitNotifications.requestPermission(callback);
+							window.webkitNotifications.requestPermission(gotPermissionsCallback);
 						} else {
-							callback();
+							gotPermissionsCallback();
 						}
 					}
 				});
 			}
+			
+			var timePickerClosed = function(time, picker){
+				console.log(picker.id + " set to " + time);
+				var start_time = $('#start-time-picker').val();
+				var end_time = $('#end-time-picker').val()
+				console.log("Start: " + start_time + " End: " + end_time)
+				$.ajax({
+					url: '/schedule/{{ schedule.key }}/edit',
+					data: { start_time: start_time, end_time: end_time },
+					type: 'POST',
+					processData: true,
+					dataType: 'json',
+					success: function(data, status, xhr){
+						console.log('Edit complete.');
+					},
+				});
+			};
+			var options = {
+				showPeriod: true,
+				showLeadingZero: false,
+				showMinutesLeadingZero: false,
+				onClose: timePickerClosed,
+			};
+			$('#start-time-picker').timepicker(options);
+			$('#end-time-picker').timepicker(options);
 		});
 	</script>
 	
-	{% include "header_bar.html" %}
-  
-  <h3 class="schedule-name">{{ schedule.name }}</h3>
+	<div id="page-container">
 	
-	<div id="columns-container">
+	{% include "header_bar.html" %}
+	
+	<div id="page-center-column">
+  
+  		<h3 class="schedule-name">{{ schedule.name }}</h3>
+	
+			<div id="columns-container">
 
-		<div id="left-container">	
-			<div class="bar-container">
-				{% for i in items %}
-					<div class="item-row" style="height: {{ i.pct }}%;">
-						<div class="color-bar" style="background-color: {{ i.get_color }};">
-							&nbsp;
-						</div>
-						<div class="item-text">
-							<div class="start-time">{{ i.start_time|time:"P" }}</div>
-							<div id="subject-name-{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
-							<div class="subject-links">
-								<a href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
-								<a href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
-								<a href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
+				<div id="left-container">	
+					<div class="bar-container">
+						{% for i in items %}
+							<div class="item-row" style="height: {{ i.pct }}%;">
+								<div class="{%if forloop.last%}color-bar-last{%else%}color-bar{%endif%}" style="background-color: {{ i.get_color }};">
+									&nbsp;
+								</div>
+								<div class="item-text">
+									<div class="start-time">{{ i.start_time|time:"f A" }}</div>
+									<div id="subject-name-{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
+									<div class="subject-links">
+										<a href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
+										<a href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
+										<a href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
+									</div>
+								</div>
+							</div>
+						{% endfor %}
+						<div style="float:left;">
+							<div class="start-time" style="margin-left: 5px">
+							{{ end_time|time:"f A" }}
 							</div>
 						</div>
 					</div>
-				{% endfor %}
-				<div style="float:left;">
-					<div class="start-time" style="margin-left: 5px">
-					{{ end_time|time:"P" }}
-					</div>
 				</div>
-			</div>
-		</div>
 		
-		<div id="right-container">
-			<form id="add-item-container" action="/schedule/{{ schedule.key }}/add" method="post">
-				<label for="add-item-name">Add Subject</label>
-				<input type="text" id="add-item-name" name="name" class="name-textbox"></input>
-				<input type="submit" id="add-item-button" value="Add"></input>
-				<!-- <div class="clearer" /> -->
-			</form>
+				<div id="right-container">
+					<form id="add-item-container" action="/schedule/{{ schedule.key }}/add" method="post">
+						<label for="add-item-name">Add Subject:</label>
+						<input type="text" id="add-item-name" name="name" class="name-textbox"></input>
+						<input type="submit" id="add-item-button" value="Add"></input>
+						<!-- <div class="clearer" /> -->
+					</form>
 			
-			<br />
+					<br />
 			
-			<h4>Options</h4>
-			<div id="options-container">
-				<div>
-					<input type="checkbox" id="check-enable-breaks" name="enable-breaks" class="options-checkbox"></input>
-					<label for="check-enable-breaks">Enable breaks between subjects.</label>
-				</div>
+					<div id="options-container">
+						<div>
+							<input type="checkbox" id="check-enable-breaks" name="enable-breaks" class="options-checkbox"></input>
+							<label for="check-enable-breaks">Enable breaks between subjects.</label>
+						</div>
 				
-				<div>
-					<input type="checkbox" id="check-enable-notifications" name="enable-notifications" class="options-checkbox"></input>
-					<label for="check-enable-notifications">Enable desktop notifications when it's time to change subjects.</label>
-				</div>
-			</div>
+						<div>
+							<input type="checkbox" id="check-enable-notifications" name="enable-notifications" class="options-checkbox"></input>
+							<label for="check-enable-notifications">Enable desktop notifications when it's time to change subjects.</label>
+						</div>
+						
+						<br />
+						
+						<form id="edit-times-container" action="/schedule/{{ schedule.key }}/edit" method="post">
+							<div style="padding: .2em;">
+								<label for="start-time-picker">Start time:</label>
+								<input type="text" name="start-time-picker" id="start-time-picker" value="{{ start_time|time:"h:i A" }}" />
+							</div>
+							<div style="padding: .2em;">
+								<label for="end-time-picker">End time:</label>
+								<input type="text" name="end-time-picker" id="end-time-picker" value="{{ end_time|time:"h:i A" }}" />
+							<div>
+						</form>
+					</div>
 			
-			<br />
+					<br />
+				</div>
+	
+			</div>
 		</div>
-	
 	</div>
-	
   </body>
 </html>

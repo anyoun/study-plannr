@@ -1,3 +1,4 @@
+/* General */
 @font-face {
 	font-family: Prociono;
 	src: url('/stylesheets/prociono/Prociono.otf');
@@ -19,15 +20,25 @@ a {
 
 body {
   font-family: Verdana, Helvetica, sans-serif;
-  /*background-color: #DDDDDD;*/
-  background-color:  white;
+  background-color: #DDDDDD;
   font-size: 100%;
+}
+
+#page-container {
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 0;
+    margin-top: 0;
+    height: 100%;
+    background-color: #FFFFFF;
+    width: 960px;
 }
 
 .clearer {
 	clear: both;
 }
 
+/* Shared Header */
 a.logo-link {
 	color: black;
 	text-decoration: none;
@@ -39,16 +50,16 @@ a.logo-link:hover {
 	color: #0000FF;
 }
 
-
 #header-bar {
-
+    background-color: #DCF900;
+    padding: .2em;
 }
 #header-bar-right {
 	font-size: 66%;
 	float: right;
-	background-color: #DDDDDD;
-	border: 1px solid #DDDDDD;
 }
+
+/* Schedule details page */
 
 h3 {
 	margin: 1em;
@@ -107,7 +118,7 @@ div.start-time {
 	top: -.5em;
 }
 
-div.color-bar {
+div.color-bar, div.color-bar-last {
 	width: 2em;
 	float: left;
 	height: 100%;
@@ -115,15 +126,19 @@ div.color-bar {
 	border-right: 1px solid black;
 	border-top: 1px solid black;
 }
+div.color-bar-last {
+    border-bottom: 1px solid black;
+}
 
 #add-schedule-container,
 #add-item-container {
 	/*clear: both;*/
+	margin: .5em;
 }
 
 #add-schedule-container label,
 #add-item-container label {
-	font-weight: bold;
+	font-weight: normal;
 }
 .name-textbox {
 	border: 1px solid #888888;
@@ -160,12 +175,13 @@ div.color-bar {
 }
 
 #columns-container {
-	width: 40em;
+	width: 100%;
 }
 #right-container {
 	border: solid 1px #DDDDDD;
 	width: auto;
-	margin-left: 50%;
+	margin-left: 45%;
+	margin-right: 2em;
 	padding: 1em;
 }
 #left-container {
@@ -177,3 +193,60 @@ div.color-bar {
 	font-size: 75%;
 	padding: .5em;
 }
+
+/* Main page */
+
+.schedule-buttons {
+    font-size: 75%;
+}
+.schedule-details {
+    font-size: 75%;
+    color: #AAAAAA;
+}
+
+#welcome-pane-left {
+    padding: .2em; 
+    float: left;
+    width: 70%;
+    font-size: 200%;
+	font-family: Prociono, Arial;	
+	padding: 1em;
+}
+#welcome-pane-right { 
+    padding: .2em;
+    margin-left: 70%;
+}
+
+#login-button {
+	font-size: 125%;
+    text-align: center;
+    width: 8em;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 3em;
+    padding: .5 em;
+
+    border: 2px solid #8F04A8;
+    border-radius: .2em;
+    -moz-border-radius: .2em;
+
+    background: #A77DAE;
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#B997BE', endColorstr='#86648B');
+	background: -webkit-gradient(linear, left top, left bottom, from(#B997BE), to(#86648B));
+	background: -moz-linear-gradient(top,  #B997BE,  #86648B);
+}
+.login-button-link {
+    color: black;
+    text-decoration: none;
+}
+
+
+
+
+
+
+
+
+
+
+

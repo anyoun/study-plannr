@@ -2,12 +2,10 @@
 <a class="logo-link" href="/">StudyPlannr</a>
 <div id="header-bar-right">
 {% if is_loggedin %}
-Signed in as {{ user_name }}
+{{ user_name }} | 
 <form class="link-form" action="{{logout_link}}" method="get">
-	<input class="link-button" type="submit" value="Logout"></input>
+	<input class="link-button" type="submit" value="Sign out"></input>
 </form>
-{% else %}
-<a href="{{ login_link }}">Login</a>
 {% endif %}
 </div>
 </div>

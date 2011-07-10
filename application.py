@@ -9,12 +9,16 @@ from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
 from google.appengine.ext import db
 from time import sleep
-from datetime import time
+from datetime import time, datetime
 
 class Schedule(db.Model):
     user = db.UserProperty()
     name = db.StringProperty()
     date = db.DateTimeProperty(auto_now_add=True)
+    start_time = db.TimeProperty(default=time(9,0,0))
+    end_time = db.TimeProperty(default=time(17,0,0))
+    def get_NumSubjects(self):
+        return self.scheduleitem_set.count()
 
 class ScheduleItem(db.Model):
     schedule = db.ReferenceProperty(Schedule)
@@ -93,8 +97,8 @@ class ViewSchedule(webapp.RequestHandler):
         items = schedule.scheduleitem_set
         calc_items = []
         total_weight = sum(i.time_weight for i in items)
-        start_time = time(9,0,0)
-        end_time = time(17,0,0)
+        start_time = schedule.start_time
+        end_time = schedule.end_time
         total_duration = time_diff(end_time, start_time)
         current_time = start_time
         for i in items:
@@ -106,7 +110,8 @@ class ViewSchedule(webapp.RequestHandler):
             current_time = ci.end_time
             ci.ordinal = i.ordinal
             calc_items.append(ci)
-        calc_items[-1].end_time = end_time
+        if len(calc_items) > 0:
+            calc_items[-1].end_time = end_time
         current_time = end_time
         
         has_user = users.get_current_user() is not None
@@ -118,6 +123,8 @@ class ViewSchedule(webapp.RequestHandler):
             'login_link' : users.create_login_url(self.request.uri),
             'logout_link' : users.create_logout_url(self.request.uri),
             'user_name' : users.get_current_user().nickname() if has_user else None,
+            'start_time' : start_time,
+            'end_time' : end_time,
         }
         path = os.path.join(os.path.dirname(__file__), 'schedule.html')
         self.response.out.write(template.render(path, template_values))
@@ -132,6 +139,12 @@ class AddSchedule(webapp.RequestHandler):
         new_schedule.user = user
         new_schedule.name = self.request.get('name')
         new_schedule.put()
+        new_item = ScheduleItem()
+        new_item.schedule = new_schedule
+        new_item.name = 'Subject 1'
+        new_item.time_weight = 1.0
+        new_item.ordinal = 0
+        new_item.put()
         self.redirect('/schedule/' + str(new_schedule.key()))
 
 class AddScheduleItem(webapp.RequestHandler):
@@ -167,13 +180,24 @@ class EditScheduleItem(webapp.RequestHandler):
             raise Exception('Unknown mode')
         self.redirect('/schedule/' + str(item.schedule.key()))
 
-class RenameSchedule(webapp.RequestHandler):
+class EditSchedule(webapp.RequestHandler):
+    def parse_time(self, s):
+        t = datetime.strptime(s, '%I:%M %p').time()
+        #logging.info("String: '%s' time: '%s'" % (s,t))
+        return t
+    def valid(self, s):
+        return s is not None and s != ''
     def post(self, schedule_key):
         schedule = GetSchedule(schedule_key)
         if schedule.user != users.get_current_user():
             self.redirect('/')
             return
-        schedule.name = self.request.get("value")
+        if self.valid(self.request.get("name")):
+            schedule.name = self.request.get("name")
+        if self.valid(self.request.get("start_time")):
+            schedule.start_time = self.parse_time(self.request.get("start_time"))
+        if self.valid(self.request.get("end_time")):
+            schedule.end_time = self.parse_time(self.request.get("end_time"))
         schedule.put()
         sleep(1)
         self.response.out.write(schedule.name)
@@ -207,9 +231,9 @@ application = webapp.WSGIApplication(
                                       ('/schedule/(.*)/add', AddScheduleItem),
                                       ('/schedule/(.*)/(.*)/(more|less|remove)', EditScheduleItem),
                                       ('/schedule/(.*)/rename-item', RenameScheduleItem),
-                                      ('/schedule/(.*)/rename', RenameSchedule),
+                                      ('/schedule/(.*)/edit', EditSchedule),
                                       ('/schedule/(.*)/remove', RemoveSchedule),
-                                      ('/schedule/(.*)', ViewSchedule)],
+                                      ('/schedule/(.*)/?(json))', ViewSchedule)],
                                      debug=True)
 
 def main():

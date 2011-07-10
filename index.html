@@ -17,22 +17,34 @@
 			{% endfor %}
 		});  
 	</script>
-  
+	
+	<div id="page-container">
+	
 	{% include "header_bar.html" %}
+	
+	<div id="page-center-column">
 
 	{% if not is_loggedin %}
-	    <a href="{{ login_link }}">Login</a>
+	    <div id="welcome-pane">
+	    	<div id="welcome-pane-left">Create and follow study schedules to help keep you on track.</div>
+	    	<div id="welcome-pane-right">
+		    	<a href="{{ login_link }}" class="login-button-link"><div id="login-button">Sign in using Google</div></a>
+	    	</div>
+	    </div>
     {% else %}
-    	<h3>Schedules:</h3>
     	<ul class="schedule-list">
     	{% if schedules %}
         {% for s in schedules %}
     		<li>
     			<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>
-    			<a href="/schedule/{{ s.key }}">Edit</a>
-    			<form class="link-form" action="/schedule/{{ s.key }}/remove" method="post">
-    				<input class="link-button" type="submit" value="Remove"></input>
-    			</form>
+    			<div class="schedule-details">Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</div>
+    			<div class="schedule-buttons">
+	    		    <a href="/schedule/{{ s.key }}">Edit</a>
+	    			<form class="link-form" action="/schedule/{{ s.key }}/remove" method="post">
+	    				<input class="link-button" type="submit" value="Remove"></input>
+	    			</form>
+	    			<a href="/schedule/{{ s.key }}">Follow</a>
+    			</div>
     		</li>
 	    {% endfor %}
 	    {% else %}
@@ -51,6 +63,9 @@
 			</form>
 		</div>
     {% endif %}
+    
+    </div>
+    </div>
 
   </body>
 </html>

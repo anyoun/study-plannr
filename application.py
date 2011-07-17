@@ -233,7 +233,7 @@ application = webapp.WSGIApplication(
                                       ('/schedule/(.*)/rename-item', RenameScheduleItem),
                                       ('/schedule/(.*)/edit', EditSchedule),
                                       ('/schedule/(.*)/remove', RemoveSchedule),
-                                      ('/schedule/(.*)/?(json))', ViewSchedule)],
+                                      ('/schedule/(.*)', ViewSchedule)],
                                      debug=True)
 
 def main():

@@ -2,6 +2,7 @@ import cgi
 import os
 import logging
 import re
+import json
 
 from google.appengine.ext.webapp import template
 from google.appengine.api import users
@@ -33,9 +34,9 @@ class CalculatedScheduleItem:
         self.key = scheduleItem.key
         self.name = scheduleItem.name
         self.ordinal = scheduleItem.ordinal
-    def get_color(self):
-        return COLOR_LIST[self.ordinal % len(COLOR_LIST)]
 
+def get_color_for_item(scheduleItem):
+    return COLOR_LIST[scheduleItem.ordinal % len(COLOR_LIST)]
 def time_diff(x, y):
     return 3600*(x.hour-y.hour) + 60*(x.minute-y.minute) + x.second-y.second
 def add_time(t, delta_seconds):
@@ -89,7 +90,7 @@ def GetSchedule(schedule_key):
 
 class ViewSchedule(webapp.RequestHandler):
 #    @login_required
-    def get(self, schedule_key):
+    def get(self, schedule_key, format):
         schedule = GetSchedule(schedule_key)
         if schedule is None:
             self.redirect('/')
@@ -109,25 +110,29 @@ class ViewSchedule(webapp.RequestHandler):
             ci.end_time = round_time_5min(add_time(ci.start_time, duration))
             current_time = ci.end_time
             ci.ordinal = i.ordinal
+            ci.get_color = get_color_for_item(ci)
             calc_items.append(ci)
         if len(calc_items) > 0:
             calc_items[-1].end_time = end_time
         current_time = end_time
         
         has_user = users.get_current_user() is not None
-        template_values = {
-            'schedule' : schedule,
-            'items' : calc_items,
-            'end_time' : current_time,
-            'is_loggedin' : has_user,
-            'login_link' : users.create_login_url(self.request.uri),
-            'logout_link' : users.create_logout_url(self.request.uri),
-            'user_name' : users.get_current_user().nickname() if has_user else None,
-            'start_time' : start_time,
-            'end_time' : end_time,
-        }
-        path = os.path.join(os.path.dirname(__file__), 'schedule.html')
-        self.response.out.write(template.render(path, template_values))
+        if format == 'json':
+            json.dump([p.__dict__ for p in calc_items], self.response.out.write)
+        else:    
+            template_values = {
+                'schedule' : schedule,
+                'items' : calc_items,
+                'end_time' : current_time,
+                'is_loggedin' : has_user,
+                'login_link' : users.create_login_url(self.request.uri),
+                'logout_link' : users.create_logout_url(self.request.uri),
+                'user_name' : users.get_current_user().nickname() if has_user else None,
+                'start_time' : start_time,
+                'end_time' : end_time,
+            }
+            path = os.path.join(os.path.dirname(__file__), 'schedule.html')
+            self.response.out.write(template.render(path, template_values))
 
 class AddSchedule(webapp.RequestHandler):
     def post(self):
@@ -228,12 +233,12 @@ class RemoveSchedule(webapp.RequestHandler):
 application = webapp.WSGIApplication(
                                      [('/', HomePage),
                                       ('/add_schedule', AddSchedule),
-                                      ('/schedule/(.*)/add', AddScheduleItem),
-                                      ('/schedule/(.*)/(.*)/(more|less|remove)', EditScheduleItem),
-                                      ('/schedule/(.*)/rename-item', RenameScheduleItem),
-                                      ('/schedule/(.*)/edit', EditSchedule),
-                                      ('/schedule/(.*)/remove', RemoveSchedule),
-                                      ('/schedule/(.*)/?(json))', ViewSchedule)],
+                                      ('/schedule/([^/]*)/add', AddScheduleItem),
+                                      ('/schedule/([^/]*)/([^/]*)/(more|less|remove)', EditScheduleItem),
+                                      ('/schedule/([^/]*)/rename-item', RenameScheduleItem),
+                                      ('/schedule/([^/]*)/edit', EditSchedule),
+                                      ('/schedule/([^/]*)/remove', RemoveSchedule),
+                                      ('/schedule/([^/]*)/?(json)', ViewSchedule)],
                                      debug=True)
 
 def main():

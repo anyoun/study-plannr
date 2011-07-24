@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
   <head>
 {% include "shared_head.html" %}
@@ -5,6 +6,34 @@
   <body>
   
 	<script>
+		var scheduleKey = '{{ schedule.key }}';
+		
+		var onAjaxError = function(jqXHR, textStatus, errorThrown){
+			console.log('AJAX error!.')
+		};
+		
+		var asyncGetScheduleItems = function(callback){
+            $.ajax({
+                url: '/schedule/' + scheduleKey + '/json',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data, status, xhr){
+                    console.log('Got schedule items JSON.');
+					callback(data);
+                },
+				error: onAjaxError,
+            });
+        };
+		var rerender = function(items){
+			console.log('rerender...');
+			for (var i=0; i < items.length; i++) {
+				$('#item-row-' + items[i].key).css('height', items[i].pct + '%');
+				$('#item-start-time-' + items[i].key).text(items[i].start_time);
+			};
+			var lastItem = items[items.length-1];
+			$('#items-end-time').text(lastItem.end_time);
+		};
+
 		$(document).ready(function() {
 			$('.subject-name').editable('/schedule/{{ schedule.key }}/rename-item', {
 				tooltip	  : 'Click to change subject name.',
@@ -18,6 +47,39 @@
          		cssclass  : 'schedule-name-editing',
          		onblur    : 'submit',
 				name	  : 'name',
+			});
+			
+			var ajaxAndRefresh = function(event){
+				event.preventDefault();
+				$.ajax({
+					url: event.target,
+					type: 'GET',
+					dataType: 'json',
+					success: function(data, status, xhr){
+	                    console.log('Called more/less link');
+						rerender(data);
+	                },
+					error: onAjaxError,
+				});
+			};
+			$(".item-more-link").click(ajaxAndRefresh);
+			$(".item-less-link").click(ajaxAndRefresh);
+			
+			$(".item-remove-link").click(function(event){
+				event.preventDefault();
+				var uri = event.target.href;
+				var anchor = $(this);
+				$.ajax({
+					url: uri,
+					type: 'GET',
+					dataType: 'json',
+					success: function(data, status, xhr){
+	                    console.log('Called remove link');
+						anchor.parents('.item-row').remove();
+						rerender(data);
+	                },
+					error: onAjaxError,
+				});
 			});
 			
 			if( window.webkitNotifications ) {
@@ -66,79 +128,81 @@
 	
 	<div id="page-container">
 	
-	{% include "header_bar.html" %}
+		{% include "header_bar.html" %}
 	
-	<div id="page-center-column">
+		<div id="page-center-column">
   
-  		<h3 class="schedule-name">{{ schedule.name }}</h3>
+	  		<h3 class="schedule-name">{{ schedule.name }}</h3>
 	
 			<div id="columns-container">
 
 				<div id="left-container">	
 					<div class="bar-container">
 						{% for i in items %}
-							<div class="item-row" style="height: {{ i.pct }}%;">
+							<div id="item-row-{{i.key}}" class="item-row" style="height: {{ i.pct }}%;">
 								<div class="{%if forloop.last%}color-bar-last{%else%}color-bar{%endif%}" style="background-color: {{ i.get_color }};">
 									&nbsp;
 								</div>
 								<div class="item-text">
-									<div class="start-time">{{ i.start_time|time:"f A" }}</div>
+									<div id="item-start-time-{{i.key}}" class="start-time">{{ i.start_time }}</div>
 									<div id="subject-name-{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
 									<div class="subject-links">
-										<a href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
-										<a href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
-										<a href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
+										<a class="item-more-link" href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
+										<a class="item-less-link" href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
+										<a class="item-remove-link" href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
 									</div>
 								</div>
 							</div>
 						{% endfor %}
 						<div style="float:left;">
-							<div class="start-time" style="margin-left: 5px">
-							{{ end_time|time:"f A" }}
+							<div id="items-end-time" class="start-time" style="margin-left: 5px">
+							{{ end_time }}
 							</div>
 						</div>
 					</div>
 				</div>
-		
+	
 				<div id="right-container">
 					<form id="add-item-container" action="/schedule/{{ schedule.key }}/add" method="post">
 						<label for="add-item-name">Add Subject:</label>
 						<input type="text" id="add-item-name" name="name" class="name-textbox"></input>
 						<input type="submit" id="add-item-button" value="Add"></input>
-						<!-- <div class="clearer" /> -->
 					</form>
-			
+		
 					<br />
-			
+		
 					<div id="options-container">
 						<div>
 							<input type="checkbox" id="check-enable-breaks" name="enable-breaks" class="options-checkbox"></input>
 							<label for="check-enable-breaks">Enable breaks between subjects.</label>
 						</div>
-				
+			
 						<div>
 							<input type="checkbox" id="check-enable-notifications" name="enable-notifications" class="options-checkbox"></input>
 							<label for="check-enable-notifications">Enable desktop notifications when it's time to change subjects.</label>
 						</div>
-						
+					
 						<br />
-						
+					
 						<form id="edit-times-container" action="/schedule/{{ schedule.key }}/edit" method="post">
 							<div style="padding: .2em;">
 								<label for="start-time-picker">Start time:</label>
-								<input type="text" name="start-time-picker" id="start-time-picker" value="{{ start_time|time:"h:i A" }}" />
+								<input type="text" name="start-time-picker" id="start-time-picker" value="{{ start_time }}" />
 							</div>
 							<div style="padding: .2em;">
 								<label for="end-time-picker">End time:</label>
-								<input type="text" name="end-time-picker" id="end-time-picker" value="{{ end_time|time:"h:i A" }}" />
-							<div>
+								<input type="text" name="end-time-picker" id="end-time-picker" value="{{ end_time }}" />
+							</div>
 						</form>
 					</div>
-			
+		
 					<br />
 				</div>
-	
+
 			</div>
+					
+			<div class="clearer" />
+
 		</div>
 	</div>
   </body>

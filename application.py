@@ -2,7 +2,8 @@ import cgi
 import os
 import logging
 import re
-import json
+#import json
+from django.utils import simplejson
 
 from google.appengine.ext.webapp import template
 from google.appengine.api import users
@@ -27,16 +28,13 @@ class ScheduleItem(db.Model):
     time_weight = db.FloatProperty()
     ordinal = db.IntegerProperty()
      
+TIME_FORMAT_STRING = '%I:%M %p'
+ADD_FAKE_DELAYS = False
+
 #COLOR_LIST = [ '#0F4FA8', '#FFCA00', '#FF6200' ]
 COLOR_LIST = ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)', 'rgb(255,127,0)', 'rgb(255,255,51)', 'rgb(166,86,40)', 'rgb(247,129,191)', 'rgb(153,153,153)']
-class CalculatedScheduleItem:
-    def __init__(self, scheduleItem):
-        self.key = scheduleItem.key
-        self.name = scheduleItem.name
-        self.ordinal = scheduleItem.ordinal
-
 def get_color_for_item(scheduleItem):
-    return COLOR_LIST[scheduleItem.ordinal % len(COLOR_LIST)]
+    return COLOR_LIST[scheduleItem['ordinal'] % len(COLOR_LIST)]
 def time_diff(x, y):
     return 3600*(x.hour-y.hour) + 60*(x.minute-y.minute) + x.second-y.second
 def add_time(t, delta_seconds):
@@ -66,6 +64,12 @@ def round_time_5min(t):
     else:
         return time(t.hour, t.minute // 5 * 5, 0)
 
+class DateTimeEncoder(simplejson.JSONEncoder):
+    def default(self, obj):
+        if hasattr(obj, 'isoformat'):
+               return obj.isoformat()
+        return simplejson.JSONEncoder.default(self, obj)
+
 class HomePage(webapp.RequestHandler):
     def get(self):
         has_user = users.get_current_user() is not None
@@ -88,6 +92,37 @@ def GetSchedule(schedule_key):
         return None
     return schedule
 
+
+def calculate_schedule_items(schedule):
+    items = schedule.scheduleitem_set
+    calc_items = []
+    total_weight = sum(i.time_weight for i in items)
+    start_time = schedule.start_time
+    end_time = schedule.end_time
+    total_duration = time_diff(end_time, start_time)
+    current_time = start_time
+    for i in items:
+        ci = { }
+        ci['key'] = str(i.key())
+        ci['name'] = i.name
+        ci['ordinal'] = i.ordinal
+        ci['pct'] = 100.0 * i.time_weight / total_weight
+        ci['start_time'] = current_time.strftime(TIME_FORMAT_STRING)
+        duration = multi_duration(total_duration, ci['pct']/100.0)
+        current_time = round_time_5min(add_time(current_time, duration))
+        ci['end_time'] = current_time.strftime(TIME_FORMAT_STRING)
+        ci['ordinal'] = i.ordinal
+        ci['get_color'] = get_color_for_item(ci)
+        calc_items.append(ci)
+    if len(calc_items) > 0:
+        calc_items[-1]['end_time'] = end_time.strftime(TIME_FORMAT_STRING)
+    current_time = end_time
+    return (calc_items, start_time, end_time)
+
+def return_json(request_handler, obj):
+    request_handler.response.headers['Content-Type'] = 'application/json'
+    request_handler.response.out.write(simplejson.dumps(obj, cls=DateTimeEncoder))
+    
 class ViewSchedule(webapp.RequestHandler):
 #    @login_required
     def get(self, schedule_key, format):
@@ -95,41 +130,20 @@ class ViewSchedule(webapp.RequestHandler):
         if schedule is None:
             self.redirect('/')
             return
-        items = schedule.scheduleitem_set
-        calc_items = []
-        total_weight = sum(i.time_weight for i in items)
-        start_time = schedule.start_time
-        end_time = schedule.end_time
-        total_duration = time_diff(end_time, start_time)
-        current_time = start_time
-        for i in items:
-            ci = CalculatedScheduleItem(i)
-            ci.pct = 100.0 * i.time_weight / total_weight
-            ci.start_time = current_time
-            duration = multi_duration(total_duration, ci.pct/100.0)
-            ci.end_time = round_time_5min(add_time(ci.start_time, duration))
-            current_time = ci.end_time
-            ci.ordinal = i.ordinal
-            ci.get_color = get_color_for_item(ci)
-            calc_items.append(ci)
-        if len(calc_items) > 0:
-            calc_items[-1].end_time = end_time
-        current_time = end_time
-        
+        (calc_items, start_time, end_time) = calculate_schedule_items(schedule)
         has_user = users.get_current_user() is not None
         if format == 'json':
-            json.dump([p.__dict__ for p in calc_items], self.response.out.write)
+            return_json(self, calc_items)
         else:    
             template_values = {
                 'schedule' : schedule,
                 'items' : calc_items,
-                'end_time' : current_time,
                 'is_loggedin' : has_user,
                 'login_link' : users.create_login_url(self.request.uri),
                 'logout_link' : users.create_logout_url(self.request.uri),
                 'user_name' : users.get_current_user().nickname() if has_user else None,
-                'start_time' : start_time,
-                'end_time' : end_time,
+                'start_time' : start_time.strftime(TIME_FORMAT_STRING),
+                'end_time' : end_time.strftime(TIME_FORMAT_STRING),
             }
             path = os.path.join(os.path.dirname(__file__), 'schedule.html')
             self.response.out.write(template.render(path, template_values))
@@ -183,7 +197,8 @@ class EditScheduleItem(webapp.RequestHandler):
             item.delete()
         else:
             raise Exception('Unknown mode')
-        self.redirect('/schedule/' + str(item.schedule.key()))
+        (calc_items, start_time, end_time) = calculate_schedule_items(item.schedule)
+        return_json(self, calc_items)
 
 class EditSchedule(webapp.RequestHandler):
     def parse_time(self, s):
@@ -204,7 +219,8 @@ class EditSchedule(webapp.RequestHandler):
         if self.valid(self.request.get("end_time")):
             schedule.end_time = self.parse_time(self.request.get("end_time"))
         schedule.put()
-        sleep(1)
+        if ADD_FAKE_DELAYS:
+            sleep(1)
         self.response.out.write(schedule.name)
 
 class RenameScheduleItem(webapp.RequestHandler):
@@ -217,7 +233,8 @@ class RenameScheduleItem(webapp.RequestHandler):
             return
         item.name = self.request.get("value")
         item.put()
-        sleep(1)
+        if ADD_FAKE_DELAYS:
+            sleep(1)
         self.response.out.write(item.name)
         
 class RemoveSchedule(webapp.RequestHandler):
@@ -238,7 +255,7 @@ application = webapp.WSGIApplication(
                                       ('/schedule/([^/]*)/rename-item', RenameScheduleItem),
                                       ('/schedule/([^/]*)/edit', EditSchedule),
                                       ('/schedule/([^/]*)/remove', RemoveSchedule),
-                                      ('/schedule/([^/]*)/?(json)', ViewSchedule)],
+                                      ('/schedule/([^/]*)/?(json)?', ViewSchedule)],
                                      debug=True)
 
 def main():

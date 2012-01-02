@@ -1,136 +1,22 @@
 <!DOCTYPE html>
 <html>
   <head>
+	<title>StudyPlannr.com - Edit Schedule</title>
 {% include "shared_head.html" %}
+	<script type="application/javascript" src="/scripts/schedule_scripts.js"></script>
   </head>
   <body>
-  
-	<script>
+	<script type="text/javascript">
 		var scheduleKey = '{{ schedule.key }}';
-		
-		var onAjaxError = function(jqXHR, textStatus, errorThrown){
-			console.log('AJAX error!.')
-		};
-		
-		var asyncGetScheduleItems = function(callback){
-            $.ajax({
-                url: '/schedule/' + scheduleKey + '/json',
-                type: 'GET',
-                dataType: 'json',
-                success: function(data, status, xhr){
-                    console.log('Got schedule items JSON.');
-					callback(data);
-                },
-				error: onAjaxError,
-            });
-        };
-		var rerender = function(items){
-			console.log('rerender...');
-			for (var i=0; i < items.length; i++) {
-				$('#item-row-' + items[i].key).css('height', items[i].pct + '%');
-				$('#item-start-time-' + items[i].key).text(items[i].start_time);
-			};
-			var lastItem = items[items.length-1];
-			$('#items-end-time').text(lastItem.end_time);
-		};
-
-		$(document).ready(function() {
-			$('.subject-name').editable('/schedule/{{ schedule.key }}/rename-item', {
-				tooltip	  : 'Click to change subject name.',
-         		indicator : '<div class="subject-name-loading-placeholder"><img src="/images/ajax-loader.gif"></div>',
-         		cssclass  : 'subject-name-editing',
-         		onblur    : 'submit',
-			});
-			$('.schedule-name').editable('/schedule/{{ schedule.key }}/edit', {
-				tooltip	  : 'Click to change schedule name.',
-         		indicator : '<div class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></div>',
-         		cssclass  : 'schedule-name-editing',
-         		onblur    : 'submit',
-				name	  : 'name',
-			});
-			
-			var ajaxAndRefresh = function(event){
-				event.preventDefault();
-				$.ajax({
-					url: event.target,
-					type: 'GET',
-					dataType: 'json',
-					success: function(data, status, xhr){
-	                    console.log('Called more/less link');
-						rerender(data);
-	                },
-					error: onAjaxError,
-				});
-			};
-			$(".item-more-link").click(ajaxAndRefresh);
-			$(".item-less-link").click(ajaxAndRefresh);
-			
-			$(".item-remove-link").click(function(event){
-				event.preventDefault();
-				var uri = event.target.href;
-				var anchor = $(this);
-				$.ajax({
-					url: uri,
-					type: 'GET',
-					dataType: 'json',
-					success: function(data, status, xhr){
-	                    console.log('Called remove link');
-						anchor.parents('.item-row').remove();
-						rerender(data);
-	                },
-					error: onAjaxError,
-				});
-			});
-			
-			if( window.webkitNotifications ) {
-				$('#check-enable-notifications').click(function(){
-					if($('#check-enable-notifications').attr('checked')) {
-						var gotPermissionsCallback = function() {
-							var popup = window.webkitNotifications.createNotification("/images/logo.png", "title", "body");
-							popup.show();
-							window.setTimeout(function() { popup.cancel(); }, 1000 );
-						}
-						if( window.webkitNotifications.checkPermission() != 0 ) {
-							window.webkitNotifications.requestPermission(gotPermissionsCallback);
-						} else {
-							gotPermissionsCallback();
-						}
-					}
-				});
-			}
-			
-			var timePickerClosed = function(time, picker){
-				console.log(picker.id + " set to " + time);
-				var start_time = $('#start-time-picker').val();
-				var end_time = $('#end-time-picker').val()
-				console.log("Start: " + start_time + " End: " + end_time)
-				$.ajax({
-					url: '/schedule/{{ schedule.key }}/edit',
-					data: { start_time: start_time, end_time: end_time },
-					type: 'POST',
-					processData: true,
-					dataType: 'json',
-					success: function(data, status, xhr){
-						console.log('Edit complete.');
-					},
-				});
-			};
-			var options = {
-				showPeriod: true,
-				showLeadingZero: false,
-				showMinutesLeadingZero: false,
-				onClose: timePickerClosed,
-			};
-			$('#start-time-picker').timepicker(options);
-			$('#end-time-picker').timepicker(options);
-		});
 	</script>
-	
+  
 	<div id="page-container">
 	
 		{% include "header_bar.html" %}
 	
 		<div id="page-center-column">
+			
+			<div id="error-box">asdf</div>
   
 	  		<h3 class="schedule-name">{{ schedule.name }}</h3>
 	
@@ -145,7 +31,7 @@
 								</div>
 								<div class="item-text">
 									<div id="item-start-time-{{i.key}}" class="start-time">{{ i.start_time }}</div>
-									<div id="subject-name-{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
+									<div id="subject-name-{{i.key}}" data-key="{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
 									<div class="subject-links">
 										<a class="item-more-link" href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
 										<a class="item-less-link" href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>

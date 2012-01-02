@@ -1,7 +1,8 @@
 application: medderschedule
-version: 5
-runtime: python
+version: 6
+runtime: python27
 api_version: 1
+threadsafe: true
 
 handlers:
 - url: /stylesheets
@@ -14,4 +15,4 @@ handlers:
   static_dir: images
   
 - url: /.*
-  script: application.py
+  script: main.application

@@ -16,7 +16,7 @@ from datetime import time, datetime
 class Schedule(db.Model):
     user = db.UserProperty()
     name = db.StringProperty()
-    date = db.DateTimeProperty(auto_now_add=True)
+            date = db.DateTimeProperty(auto_now_add=True)
     start_time = db.TimeProperty(default=time(9,0,0))
     end_time = db.TimeProperty(default=time(17,0,0))
     def get_NumSubjects(self):
@@ -199,6 +199,18 @@ class EditScheduleItem(webapp.RequestHandler):
             raise Exception('Unknown mode')
         (calc_items, start_time, end_time) = calculate_schedule_items(item.schedule)
         return_json(self, calc_items)
+    def post(self, schedule_key, item_key, action):
+        item = ScheduleItem.get(db.Key(item_key))
+        if item.schedule.user != users.get_current_user():
+            self.redirect('/')
+            return
+        #item_key = re.match('subject-name-(.*)', self.request.get("id")).group(1)
+        #item = ScheduleItem.get(db.Key(item_key))
+        item.name = self.request.get("value")
+        item.put()
+        if ADD_FAKE_DELAYS:
+            sleep(1)
+        self.response.out.write(item.name)
 
 class EditSchedule(webapp.RequestHandler):
     def parse_time(self, s):
@@ -222,20 +234,6 @@ class EditSchedule(webapp.RequestHandler):
         if ADD_FAKE_DELAYS:
             sleep(1)
         self.response.out.write(schedule.name)
-
-class RenameScheduleItem(webapp.RequestHandler):
-    def post(self, schedule_key):
-        schedule = GetSchedule(schedule_key)
-        item_key = re.match('subject-name-(.*)', self.request.get("id")).group(1)
-        item = ScheduleItem.get(db.Key(item_key))
-        if item.schedule.user != users.get_current_user():
-            self.redirect('/')
-            return
-        item.name = self.request.get("value")
-        item.put()
-        if ADD_FAKE_DELAYS:
-            sleep(1)
-        self.response.out.write(item.name)
         
 class RemoveSchedule(webapp.RequestHandler):
     def post(self, schedule_key):
@@ -251,15 +249,8 @@ application = webapp.WSGIApplication(
                                      [('/', HomePage),
                                       ('/add_schedule', AddSchedule),
                                       ('/schedule/([^/]*)/add', AddScheduleItem),
-                                      ('/schedule/([^/]*)/([^/]*)/(more|less|remove)', EditScheduleItem),
-                                      ('/schedule/([^/]*)/rename-item', RenameScheduleItem),
+                                      ('/schedule/([^/]*)/([^/]*)/(more|less|remove|rename)', EditScheduleItem),
                                       ('/schedule/([^/]*)/edit', EditSchedule),
                                       ('/schedule/([^/]*)/remove', RemoveSchedule),
                                       ('/schedule/([^/]*)/?(json)?', ViewSchedule)],
                                      debug=True)
-
-def main():
-    run_wsgi_app(application)
-
-if __name__ == "__main__":
-    main()

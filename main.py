@@ -3,7 +3,7 @@ import os
 import logging
 import re
 
-from django.utils import simplejson
+import json
 
 from google.appengine.ext.webapp import template
 from google.appengine.api import users
@@ -64,11 +64,11 @@ def round_time_5min(t):
     else:
         return time(t.hour, t.minute // 5 * 5, 0)
 
-class DateTimeEncoder(simplejson.JSONEncoder):
+class DateTimeEncoder(json.JSONEncoder):
     def default(self, obj):
         if hasattr(obj, 'isoformat'):
                return obj.isoformat()
-        return simplejson.JSONEncoder.default(self, obj)
+        return json.JSONEncoder.default(self, obj)
 
 class HomePage(webapp.RequestHandler):
     def get(self):
@@ -121,7 +121,7 @@ def calculate_schedule_items(schedule):
 
 def return_json(request_handler, obj):
     request_handler.response.headers['Content-Type'] = 'application/json'
-    request_handler.response.out.write(simplejson.dumps(obj, cls=DateTimeEncoder))
+    request_handler.response.out.write(json.dumps(obj, cls=DateTimeEncoder))
     
 class ViewSchedule(webapp.RequestHandler):
 #    @login_required

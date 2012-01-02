@@ -16,7 +16,7 @@ from datetime import time, datetime
 class Schedule(db.Model):
     user = db.UserProperty()
     name = db.StringProperty()
-            date = db.DateTimeProperty(auto_now_add=True)
+    date = db.DateTimeProperty(auto_now_add=True)
     start_time = db.TimeProperty(default=time(9,0,0))
     end_time = db.TimeProperty(default=time(17,0,0))
     def get_NumSubjects(self):
@@ -182,11 +182,13 @@ class AddScheduleItem(webapp.RequestHandler):
         self.redirect('/schedule/' + str(schedule.key()))
         
 class EditScheduleItem(webapp.RequestHandler):
-    def get(self, schedule_key, item_key, action):
+    def post(self, schedule_key, item_key, action):
         item = ScheduleItem.get(db.Key(item_key))
         if item.schedule.user != users.get_current_user():
             self.redirect('/')
             return
+        if ADD_FAKE_DELAYS:
+            sleep(1)
         if action == 'more':
             item.time_weight *= 1.1
             item.put()
@@ -195,22 +197,17 @@ class EditScheduleItem(webapp.RequestHandler):
             item.put()
         elif action == 'remove':
             item.delete()
+        elif action == 'rename':
+            item.name = self.request.get("value")
+            item.put()
+            #For renames, just write out the new name rather than all items
+            self.response.out.write(item.name)
+            return
         else:
             raise Exception('Unknown mode')
+        #Return all schedule items
         (calc_items, start_time, end_time) = calculate_schedule_items(item.schedule)
         return_json(self, calc_items)
-    def post(self, schedule_key, item_key, action):
-        item = ScheduleItem.get(db.Key(item_key))
-        if item.schedule.user != users.get_current_user():
-            self.redirect('/')
-            return
-        #item_key = re.match('subject-name-(.*)', self.request.get("id")).group(1)
-        #item = ScheduleItem.get(db.Key(item_key))
-        item.name = self.request.get("value")
-        item.put()
-        if ADD_FAKE_DELAYS:
-            sleep(1)
-        self.response.out.write(item.name)
 
 class EditSchedule(webapp.RequestHandler):
     def parse_time(self, s):
@@ -224,16 +221,20 @@ class EditSchedule(webapp.RequestHandler):
         if schedule.user != users.get_current_user():
             self.redirect('/')
             return
-        if self.valid(self.request.get("name")):
-            schedule.name = self.request.get("name")
-        if self.valid(self.request.get("start_time")):
-            schedule.start_time = self.parse_time(self.request.get("start_time"))
-        if self.valid(self.request.get("end_time")):
-            schedule.end_time = self.parse_time(self.request.get("end_time"))
-        schedule.put()
         if ADD_FAKE_DELAYS:
             sleep(1)
-        self.response.out.write(schedule.name)
+        if self.valid(self.request.get("name")):
+            schedule.name = self.request.get("name")
+            schedule.put()
+            self.response.out.write(schedule.name)
+        elif self.valid(self.request.get("start_time")) and self.valid(self.request.get("end_time")):
+            schedule.start_time = self.parse_time(self.request.get("start_time"))
+            schedule.end_time = self.parse_time(self.request.get("end_time"))
+            schedule.put()
+            (calc_items, start_time, end_time) = calculate_schedule_items(schedule)
+            return_json(self, calc_items)
+        else:
+            raise Exception('Unknown mode')
         
 class RemoveSchedule(webapp.RequestHandler):
     def post(self, schedule_key):

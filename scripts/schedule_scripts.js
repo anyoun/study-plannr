@@ -35,23 +35,16 @@ $(document).ready(function() {
     	$(this).show();
     });
     
-	$('.subject-name').editable(function(value, settings){
-	    var itemKey = $(this).attr('data-key');
-    	$.ajax({
-			url: '/schedule/' + scheduleKey + '/' + itemKey + '/rename',
-			data: $.param({'value':value}),
-			dataType: 'text',
-			async: false,
-			success: function(data, status, xhr){
-                return(data);
-            },
+	$('.subject-name').each(function(i,subjectName) {
+		subjectName = $(subjectName);
+		var itemKey = subjectName.attr('data-key');
+		subjectName.editable('/schedule/' + scheduleKey + '/' + itemKey + '/rename', {
+			tooltip	  : 'Click to change subject name.',
+	 		indicator : '<div class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></div>',
+	 		cssclass  : 'subject-name-editing',
+	 		onblur    : 'submit',
+//			name	  : 'name',
 		});
-		return data;
-	}, {
-		tooltip	  : 'Click to change subject name.',
- 		indicator : '<div class="subject-name-loading-placeholder"><img src="/images/ajax-loader.gif"></div>',
- 		cssclass  : 'subject-name-editing',
- 		onblur    : 'submit',
 	});
 	
 	$('.schedule-name').editable('/schedule/' + scheduleKey + '/edit', {
@@ -112,13 +105,12 @@ $(document).ready(function() {
 		var end_time = $('#end-time-picker').val()
 		console.log("Start: " + start_time + " End: " + end_time)
 		$.ajax({
-			url: '/schedule/{{ schedule.key }}/edit',
+			url: '/schedule/' + scheduleKey + '/edit',
 			data: { start_time: start_time, end_time: end_time },
-			type: 'POST',
 			processData: true,
-			dataType: 'json',
 			success: function(data, status, xhr){
 				console.log('Edit complete.');
+				rerender(data);
 			},
 		});
 	};

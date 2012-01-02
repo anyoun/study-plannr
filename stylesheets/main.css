@@ -245,7 +245,13 @@ div.color-bar-last {
     margin: 2em;
 }
 
-
+.welcome-message {
+	margin: 1em;
+	padding: 1em;
+	border: 1px solid black;
+	border-radius: .2em;
+    -moz-border-radius: .2em;
+}
 
 
 

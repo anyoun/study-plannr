@@ -33,9 +33,8 @@
 	    	</div>
 	    </div>
     {% else %}
-    	<ul class="schedule-list">
-    	{% if schedules %}
         {% for s in schedules %}
+		<ul class="schedule-list">
     		<li>
     			<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>
     			<div class="schedule-details">Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</div>
@@ -47,11 +46,13 @@
 	    			<a href="/schedule/{{ s.key }}">Follow</a>
     			</div>
     		</li>
-	    {% endfor %}
-	    {% else %}
-    		No schedules yet.
-    	{% endif %}
 	    </ul>
+	    {% empty %}
+			<div class="welcome-message">
+    			Welcome to StudyPlannr. You don't have any schedules yet. Add one below to get started.
+			</div>
+		{% endfor %}
+
 	    <br />
 	    <br />
 	    <div id="add-schedule-container">

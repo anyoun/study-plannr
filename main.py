@@ -44,7 +44,7 @@ def add_time(t, delta_seconds):
     td_seconds = total_seconds % 60
     logging.info("Seconds: %s", total_seconds)
     logging.info("%s %s %s", td_hours,td_minutes,td_seconds)
-    return time(td_hours, td_minutes, td_seconds)
+    return time(int(td_hours), int(td_minutes), int(td_seconds))
 def multi_duration(td, factor):
     return td * factor
     #total = td.seconds + td.days * 24 * 3600

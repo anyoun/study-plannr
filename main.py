@@ -73,8 +73,13 @@ class DateTimeEncoder(json.JSONEncoder):
 class HomePage(webapp.RequestHandler):
     def get(self):
         has_user = users.get_current_user() is not None
+        if has_user:
+            schedules = Schedule.all()
+            schedules.filter("user = ", users.get_current_user())
+        else:
+            schedules = None
         template_values = {
-            'schedules' : Schedule.all(),
+            'schedules' : schedules,
             'is_loggedin' : has_user,
             'login_link' : users.create_login_url(self.request.uri),
             'logout_link' : users.create_logout_url(self.request.uri),

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>StudyPlannr.com</title>
+    <title>{% block title %}{% endblock %}</title>
     <meta name="description" content="Create and follow study schedules to help keep you on track.">
     <meta name="author" content="Will Thomas">
 
@@ -21,6 +21,8 @@
       }
     </style>
 	<script type="application/javascript" src="/scripts/jquery.min.js"></script>
+	
+	{% block head %}{% endblock %}
 
     <!-- Le fav and touch icons -->
     <link rel="shortcut icon" href="images/favicon.ico">
@@ -34,7 +36,7 @@
     <div class="topbar">
       <div class="fill">
         <div class="container">
-          <a class="brand" href="#">StudyPlannr.com</a>
+          <a class="brand" href="/">StudyPlannr.com</a>
           <ul class="nav">
             <li class="active"><a href="/">Home</a></li>
             <li><a href="/about">About</a></li>
@@ -46,32 +48,7 @@
 
     <div class="container">
 
-      <!-- Main hero unit for a primary marketing message or call to action -->
-      <div class="hero-unit">
-        <h1>StudyPlannr.com</h1>
-        <p>Create and follow study schedules to help keep you on track.</p>
-        <p><a class="btn primary large" href="/schedules">Get started using your Google Account &raquo;</a></p>
-      </div>
-
-      <!-- Example row of columns -->
-      <div class="row">
-        <div class="span-one-third">
-          <h2>Organization</h2>
-          <p>Planning your studying ahead of times makes sure you don't fall behind. No more last-minute cramming or forgetting to cover every topic.</p>
-          <p><a class="btn" href="/schedules">Try it now &raquo;</a></p>
-        </div>
-        <div class="span-one-third">
-          <h2>Easy to use</h2>
-           <p>StudyPlannr is extremely simple to use. Just enter the start time, end time and the subjects to study. Reallocating time requires only one click.</p>
-           <p>StudyPlannr uses your Google Account to login so you don't have to remember any more passwords.</p>
-          <p><a class="btn" href="/schedules">See Examples &raquo;</a></p>
-       </div>
-        <div class="span-one-third">
-          <h2>Mobile</h2>
-          <p>Stay on-schedule with StudyPlannr's new app for iPhone, iPod Touch and iPad.</p>
-          <p><a class="btn" href="/schedules">App Store &raquo;</a></p>
-        </div>
-      </div>
+      {% block content %}{% endblock %}
 
       <footer>
         <p>&copy; Will Thomas 2011-2012</p>

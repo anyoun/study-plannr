@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+{% include "shared_head.html" %}
+  </head>
+  <body>
+  
+  	<script>
+		$(document).ready(function() {
+			{% for s in schedules %}
+			$('#{{s.key}}').editable('/schedule/{{ s.key }}/rename', {
+				tooltip	  : 'Click to change schedule name.',
+         		indicator : '<span class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></span>',
+         		cssclass  : 'schedule-name-editing',
+         		style	  : 'display: inline',
+         		onblur    : 'submit',
+			});
+			{% endfor %}
+		});  
+	</script>
+	
+	<div class="container">
+	
+	{% include "header_bar.html" %}
+	
+	<div class="row">
+
+	{% if not is_loggedin %}
+		<div class="span14 offset1">
+    		Create and follow study schedules to help keep you on track.
+    	</div>
+    	<div class="span2 offset1">
+	    	<a href="{{ login_link }}" class="login-button-link"><div id="login-button">Sign in using Google</div></a>
+    	</div>
+    {% else %}
+        {% for s in schedules %}
+		<div class="span14">
+			<ul class="schedule-list">
+	    		<li>
+	    			<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>
+	    			<div class="schedule-details">Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</div>
+	    			<div class="schedule-buttons">
+		    		    <a href="/schedule/{{ s.key }}">Edit</a>
+		    			<form class="link-form" action="/schedule/{{ s.key }}/remove" method="post">
+		    				<input class="link-button" type="submit" value="Remove"></input>
+		    			</form>
+		    			<a href="/schedule/{{ s.key }}">Follow</a>
+	    			</div>
+	    		</li>
+		    </ul>
+
+	    {% empty %}
+			<div class="welcome-message">
+    			Welcome to StudyPlannr. You don't have any schedules yet. Add one below to get started.
+			</div>
+		{% endfor %}
+		</div>
+
+	    <br />
+	    <br />
+	    <div id="add-schedule-container">
+			<form action="/add_schedule" method="post">
+				<div>
+					<label for="add-schedule-name">Add Schedule:</label>
+					<input type="text" name="name" id="add-schedule-name" class="name-textbox"></input>
+					<input type="submit" value="Add" id="add-schedule-button"></input>
+				</div>
+			</form>
+		</div>
+    {% endif %}
+    
+    </div>
+	</div>
+
+  </body>
+</html>

@@ -1,95 +1,83 @@
-<!DOCTYPE html>
-<html>
-  <head>
-	<title>StudyPlannr.com - Edit Schedule</title>
-{% include "shared_head.html" %}
-	<script type="application/javascript" src="/scripts/schedule_scripts.js"></script>
-  </head>
-  <body>
-	<script type="text/javascript">
-		var scheduleKey = '{{ schedule.key }}';
-	</script>
-  
-	<div id="page-container">
-	
-		{% include "header_bar.html" %}
-	
-		<div id="page-center-column">
-			
-			<div id="error-box">asdf</div>
-  
-	  		<h3 class="schedule-name">{{ schedule.name }}</h3>
-	
-			<div id="columns-container">
+{% extends "base.html" %}
 
-				<div id="left-container">	
-					<div class="bar-container">
-						{% for i in items %}
-							<div id="item-row-{{i.key}}" class="item-row" style="height: {{ i.pct }}%;">
-								<div class="{%if forloop.last%}color-bar-last{%else%}color-bar{%endif%}" style="background-color: {{ i.get_color }};">
-									&nbsp;
-								</div>
-								<div class="item-text">
-									<div id="item-start-time-{{i.key}}" class="start-time">{{ i.start_time }}</div>
-									<div id="subject-name-{{i.key}}" data-key="{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
-									<div class="subject-links">
-										<a class="item-more-link" href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
-										<a class="item-less-link" href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
-										<a class="item-remove-link" href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
-									</div>
-								</div>
-							</div>
-						{% endfor %}
-						<div style="float:left;">
-							<div id="items-end-time" class="start-time" style="margin-left: 5px">
-							{{ end_time }}
-							</div>
+{% block title %}StudyPlannr - Edit Schedule{% endblock %}
+
+{% block head %}
+<script type="application/javascript" src="/scripts/schedule_scripts.js"></script>
+<script type="text/javascript">
+	var scheduleKey = '{{ schedule.key }}';
+</script>
+{% endblock %}
+
+{% block content %}			
+<div id="error-box">asdf</div>
+
+<h3 class="schedule-name">{{ schedule.name }}</h3>
+
+<div id="columns-container">
+
+	<div id="left-container">	
+		<div class="bar-container">
+			{% for i in items %}
+				<div id="item-row-{{i.key}}" class="item-row" style="height: {{ i.pct }}%;">
+					<div class="{%if forloop.last%}color-bar-last{%else%}color-bar{%endif%}" style="background-color: {{ i.get_color }};">
+						&nbsp;
+					</div>
+					<div class="item-text">
+						<div id="item-start-time-{{i.key}}" class="start-time">{{ i.start_time }}</div>
+						<div id="subject-name-{{i.key}}" data-key="{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
+						<div class="subject-links">
+							<a class="item-more-link" href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
+							<a class="item-less-link" href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
+							<a class="item-remove-link" href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
 						</div>
 					</div>
 				</div>
-	
-				<div id="right-container">
-					<form id="add-item-container" action="/schedule/{{ schedule.key }}/add" method="post">
-						<label for="add-item-name">Add Subject:</label>
-						<input type="text" id="add-item-name" name="name" class="name-textbox"></input>
-						<input type="submit" id="add-item-button" value="Add"></input>
-					</form>
-		
-					<br />
-		
-					<div id="options-container">
-						<div>
-							<input type="checkbox" id="check-enable-breaks" name="enable-breaks" class="options-checkbox"></input>
-							<label for="check-enable-breaks">Enable breaks between subjects.</label>
-						</div>
-			
-						<div>
-							<input type="checkbox" id="check-enable-notifications" name="enable-notifications" class="options-checkbox"></input>
-							<label for="check-enable-notifications">Enable desktop notifications when it's time to change subjects.</label>
-						</div>
-					
-						<br />
-					
-						<form id="edit-times-container" action="/schedule/{{ schedule.key }}/edit" method="post">
-							<div style="padding: .2em;">
-								<label for="start-time-picker">Start time:</label>
-								<input type="text" name="start-time-picker" id="start-time-picker" value="{{ start_time }}" />
-							</div>
-							<div style="padding: .2em;">
-								<label for="end-time-picker">End time:</label>
-								<input type="text" name="end-time-picker" id="end-time-picker" value="{{ end_time }}" />
-							</div>
-						</form>
-					</div>
-		
-					<br />
+			{% endfor %}
+			<div style="float:left;">
+				<div id="items-end-time" class="start-time" style="margin-left: 5px">
+				{{ end_time }}
 				</div>
-
 			</div>
-					
-			<div class="clearer" />
-
 		</div>
 	</div>
-  </body>
-</html>
+
+	<div id="right-container">
+		<form id="add-item-container" action="/schedule/{{ schedule.key }}/add" method="post">
+			<label for="add-item-name">Add Subject:</label>
+			<input type="text" id="add-item-name" name="name" class="name-textbox"></input>
+			<input type="submit" id="add-item-button" value="Add"></input>
+		</form>
+
+		<br />
+
+		<div id="options-container">
+			<div>
+				<input type="checkbox" id="check-enable-breaks" name="enable-breaks" class="options-checkbox"></input>
+				<label for="check-enable-breaks">Enable breaks between subjects.</label>
+			</div>
+
+			<div>
+				<input type="checkbox" id="check-enable-notifications" name="enable-notifications" class="options-checkbox"></input>
+				<label for="check-enable-notifications">Enable desktop notifications when it's time to change subjects.</label>
+			</div>
+		
+			<br />
+		
+			<form id="edit-times-container" action="/schedule/{{ schedule.key }}/edit" method="post">
+				<div style="padding: .2em;">
+					<label for="start-time-picker">Start time:</label>
+					<input type="text" name="start-time-picker" id="start-time-picker" value="{{ start_time }}" />
+				</div>
+				<div style="padding: .2em;">
+					<label for="end-time-picker">End time:</label>
+					<input type="text" name="end-time-picker" id="end-time-picker" value="{{ end_time }}" />
+				</div>
+			</form>
+		</div>
+
+		<br />
+	</div>
+
+</div>
+{% endblock %}

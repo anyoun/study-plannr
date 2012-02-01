@@ -8,7 +8,7 @@ import json
 from google.appengine.ext.webapp import template
 from google.appengine.api import users
 from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
+from google.appengine.ext.webapp.util import run_wsgi_app, login_required
 from google.appengine.ext import db
 from time import sleep
 from datetime import time, datetime
@@ -67,26 +67,46 @@ def round_time_5min(t):
 class DateTimeEncoder(json.JSONEncoder):
     def default(self, obj):
         if hasattr(obj, 'isoformat'):
-               return obj.isoformat()
+            return obj.isoformat()
+        elif isinstance(obj, Schedule):
+            return {
+                'name': obj.name,
+                'key': str(obj.key()),
+                'date': obj.date,
+                'start_time': obj.start_time,
+                'end_time': obj.end_time,
+            }
         return json.JSONEncoder.default(self, obj)
 
 class HomePage(webapp.RequestHandler):
     def get(self):
-        has_user = users.get_current_user() is not None
-        if has_user:
-            schedules = Schedule.all()
-            schedules.filter("user = ", users.get_current_user())
-        else:
-            schedules = None
+        user = users.get_current_user()
+        has_user = user is not None
         template_values = {
-            'schedules' : schedules,
             'is_loggedin' : has_user,
             'login_link' : users.create_login_url(self.request.uri),
             'logout_link' : users.create_logout_url(self.request.uri),
-            'user_name' : users.get_current_user().nickname() if has_user else None,
-        }        
+            'user_name' : user.nickname() if has_user else None,
+        }
         path = os.path.join(os.path.dirname(__file__), 'index.html')
         self.response.out.write(template.render(path, template_values))
+
+class SchedulesPage(webapp.RequestHandler):
+    @login_required
+    def get(self, format):
+        user = users.get_current_user()
+        schedules = Schedule.all()
+        schedules.filter("user = ", user)
+        if format == 'json':
+            return_json(self, list(schedules.run()))
+        else:
+            template_values = {
+                'schedules' : schedules,
+                'logout_link' : users.create_logout_url(self.request.uri),
+                'user_name' : user.nickname(),
+            }        
+            path = os.path.join(os.path.dirname(__file__), 'schedules.html')
+            self.response.out.write(template.render(path, template_values))
 
 def GetSchedule(schedule_key):
     user = users.get_current_user()
@@ -129,7 +149,7 @@ def return_json(request_handler, obj):
     request_handler.response.out.write(json.dumps(obj, cls=DateTimeEncoder))
     
 class ViewSchedule(webapp.RequestHandler):
-#    @login_required
+    @login_required
     def get(self, schedule_key, format):
         schedule = GetSchedule(schedule_key)
         if schedule is None:
@@ -253,6 +273,7 @@ class RemoveSchedule(webapp.RequestHandler):
         
 application = webapp.WSGIApplication(
                                      [('/', HomePage),
+                                      ('/schedules(json)?', SchedulesPage),
                                       ('/add_schedule', AddSchedule),
                                       ('/schedule/([^/]*)/add', AddScheduleItem),
                                       ('/schedule/([^/]*)/([^/]*)/(more|less|remove|rename)', EditScheduleItem),

@@ -1,0 +1,57 @@
+@import "bootstrap/variables.less"; 
+@import "bootstrap/mixins.less"; 
+
+.schedule-name {
+  border: 1px solid transparent;
+  height: 1.2em;
+}
+.schedule-name-editing {
+  height: 1.2em;
+}
+.link-button {
+	border: none;
+	background: transparent;
+	cursor: hand;
+	font-size: 100%;
+  .box-shadow(none);
+  color: @linkColor;
+  text-decoration: none;
+  line-height: inherit;
+  font-weight: inherit;
+  &:hover {
+    color: @linkColorHover;
+    text-decoration: underline;
+  }
+}
+.color-bar(@primaryColor) {
+  width: 2em;
+	float: left;
+	height: 100%;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	border-top: 1px solid black;
+	margin-top: -1px;
+	#gradient > .horizontal(black, orange);
+	@shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.05);
+  .box-shadow(@shadow);
+  #gradient > .horizontal-three-colors(@primaryColor, @primaryColor, 25%, darken(@primaryColor, 10%));
+}
+
+.color-bar-1 { .color-bar(rgb(228,26,28)) }
+.color-bar-2 { .color-bar(rgb(55,126,184)) }
+.color-bar-3 { .color-bar(rgb(77,175,74)) }
+.color-bar-4 { .color-bar(rgb(152,78,163)) }
+.color-bar-5 { .color-bar(rgb(255,127,0)) }
+.color-bar-6 { .color-bar(rgb(255,255,51)) }
+.color-bar-7 { .color-bar(rgb(166,86,40)) }
+.color-bar-8 { .color-bar(rgb(247,129,191)) }
+.color-bar-9 { .color-bar(rgb(153,153,153)) }
+
+.color-bar-last {
+  border-bottom: 1px solid black;
+}
+
+div.start-time {
+	position: relative;
+	top: -.5em;
+}

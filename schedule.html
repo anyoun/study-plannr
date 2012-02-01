@@ -15,39 +15,38 @@
 {% endblock %}
 
 {% block content %}
-<div id="error-box">asdf</div>
+<div id="error-box">Error Box</div>
 
-<h3 class="schedule-name">{{ schedule.name }}</h3>
+<h2>{{ schedule.name }}</h2>
 
-<div id="columns-container">
+<div class="row">
 
-	<div id="left-container">	
-		<div class="bar-container">
-			{% for i in items %}
-				<div id="item-row-{{i.key}}" class="item-row" style="height: {{ i.pct }}%;">
-					<div class="{%if forloop.last%}color-bar-last{%else%}color-bar{%endif%}" style="background-color: {{ i.get_color }};">
-						&nbsp;
-					</div>
-					<div class="item-text">
-						<div id="item-start-time-{{i.key}}" class="start-time">{{ i.start_time }}</div>
-						<div id="subject-name-{{i.key}}" data-key="{{i.key}}" class="subject-name">{{ i.name|escape }}</div>
-						<div class="subject-links">
-							<a class="item-more-link" href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
-							<a class="item-less-link" href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
-							<a class="item-remove-link" href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
-						</div>
+	<div class="span4" style="height: 30em;">	
+		{% for i in items %}
+			<div id="item-row-{{i.key}}" style="height: {{ i.pct }}%;">
+				<div class="color-bar-{{forloop.counter}} {%if forloop.last%}color-bar-last{%endif%}" 
+				     style="background-color: {{ i.get_color }};">
+					&nbsp;
+				</div>
+				<div style="float: left; margin-left: 5px;">
+					<div id="item-start-time-{{i.key}}" class="start-time">{{ i.start_time }}</div>
+					<div id="subject-name-{{i.key}}" data-key="{{i.key}}"><strong>{{ i.name|escape }}</strong></div>
+					<div class="subject-links">
+						<a class="item-more-link" href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
+						<a class="item-less-link" href="/schedule/{{schedule.key}}/{{i.key}}/less">Less</a>
+						<a class="item-remove-link" href="/schedule/{{schedule.key}}/{{i.key}}/remove">Remove</a>
 					</div>
 				</div>
-			{% endfor %}
-			<div style="float:left;">
-				<div id="items-end-time" class="start-time" style="margin-left: 5px">
-				{{ end_time }}
-				</div>
+			</div>
+		{% endfor %}
+		<div class="span2">
+			<div id="items-end-time" class="start-time" style="margin-left: 5px">
+			{{ end_time }}
 			</div>
 		</div>
 	</div>
 
-	<div id="right-container">
+	<div class="span10 offset2">
 		<form id="add-item-container" action="/schedule/{{ schedule.key }}/add" method="post">
 			<label for="add-item-name">Add Subject:</label>
 			<input type="text" id="add-item-name" name="name" class="name-textbox"></input>

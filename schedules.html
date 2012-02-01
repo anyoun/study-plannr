@@ -12,40 +12,14 @@
 		{% for s in schedules %}
 		$('#{{s.key}}').editable('/schedule/{{ s.key }}/rename', {
 			tooltip	  : 'Click to change schedule name.',
-        		indicator : '<span class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></span>',
-        		cssclass  : 'schedule-name-editing',
-        		style	  : 'display: inline',
-        		onblur    : 'submit',
+			indicator : '<span class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></span>',
+			cssclass  : 'schedule-name-editing',
+			style	  : 'display: inline',
+			onblur	  : 'submit',
 		});
 		{% endfor %}
-	});  
+	});	 
 </script>
-
-<div class="row">
-	<div class="span14">
-        {% for s in schedules %}
-		<div class="span14">
-			<ul class="schedule-list">
-	    		<li>
-	    			<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>
-	    			<div class="schedule-details">Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</div>
-	    			<div class="schedule-buttons">
-		    		    <a href="/schedule/{{ s.key }}">Edit</a>
-		    			<form class="link-form" action="/schedule/{{ s.key }}/remove" method="post">
-		    				<input class="link-button" type="submit" value="Remove"></input>
-		    			</form>
-		    			<a href="/schedule/{{ s.key }}">Follow</a>
-	    			</div>
-	    		</li>
-		    </ul>
-		</div>
-		{% empty %}
-		<div class="welcome-message">
-			You don't have any schedules yet. Add one below to get started.
-		</div>
-		{% endfor %}
-	</div>
-</div><!-- /row -->
 
 <div class="row">
 	<div class="span14">
@@ -54,10 +28,37 @@
 				<label for="add-schedule-name">Add Schedule:</label>
 				<div class="input">
 					<input type="text" name="name" id="add-schedule-name" class="name-textbox"></input>
-						<input type="submit" value="Add" id="add-schedule-button" class="btn primary"></input>
+					<input type="submit" value="Add" id="add-schedule-button" class="btn primary"></input>
 				</div>
 			</fieldset>
 		</form>
 	</div>
 </div><!-- /row -->
+
+<br />
+
+<div class="row">
+	<div class="span14">
+		{% for s in schedules %}
+		<div class="span14">
+			<ul class="schedule-list">
+				<li>
+					<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>
+					<p>Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</p>
+					<form style="display:span" action="/schedule/{{ s.key }}/remove" method="post">
+						<a href="/schedule/{{ s.key }}">Edit</a>
+						<a href="/schedule/{{ s.key }}">Follow</a>
+						<input class="link-button" type="submit" value="Remove"></input>
+					</form>
+				</li>
+			</ul>
+		</div>
+		{% empty %}
+		<div>
+			<h2>You don't have any schedules yet. Add one below to get started.</h2>
+		</div>
+		{% endfor %}
+	</div>
+</div><!-- /row -->
+
 {% endblock %}

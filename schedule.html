@@ -21,15 +21,15 @@
 
 <div class="row">
 
-	<div class="span4" style="height: 30em;">	
+	<div class="span2" style="height: 30em;">	
 		{% for i in items %}
-			<div id="item-row-{{i.key}}" style="height: {{ i.pct }}%;">
+			<div id="item-row-{{i.key}}" class="row" style="height: {{ i.pct }}%;">
 				<div class="color-bar-{{forloop.counter}} {%if forloop.last%}color-bar-last{%endif%}" 
 				     style="background-color: {{ i.get_color }};">
 					&nbsp;
 				</div>
-				<div style="float: left; margin-left: 5px;">
-					<div id="item-start-time-{{i.key}}" class="start-time">{{ i.start_time }}</div>
+				<div class="subject-label">
+					<div id="item-start-time-{{i.key}}">{{ i.start_time }}</div>
 					<div id="subject-name-{{i.key}}" data-key="{{i.key}}"><strong>{{ i.name|escape }}</strong></div>
 					<div class="subject-links">
 						<a class="item-more-link" href="/schedule/{{schedule.key}}/{{i.key}}/more">More</a>
@@ -39,49 +39,72 @@
 				</div>
 			</div>
 		{% endfor %}
-		<div class="span2">
-			<div id="items-end-time" class="start-time" style="margin-left: 5px">
+		<div>
+			<div id="items-end-time" class="subject-label">
 			{{ end_time }}
 			</div>
 		</div>
 	</div>
 
-	<div class="span10 offset2">
-		<form id="add-item-container" action="/schedule/{{ schedule.key }}/add" method="post">
-			<label for="add-item-name">Add Subject:</label>
-			<input type="text" id="add-item-name" name="name" class="name-textbox"></input>
-			<input type="submit" id="add-item-button" value="Add"></input>
-		</form>
-
-		<br />
-
-		<div id="options-container">
-			<div>
-				<input type="checkbox" id="check-enable-breaks" name="enable-breaks" class="options-checkbox"></input>
-				<label for="check-enable-breaks">Enable breaks between subjects.</label>
-			</div>
-
-			<div>
-				<input type="checkbox" id="check-enable-notifications" name="enable-notifications" class="options-checkbox"></input>
-				<label for="check-enable-notifications">Enable desktop notifications when it's time to change subjects.</label>
-			</div>
-		
-			<br />
-		
-			<form id="edit-times-container" action="/schedule/{{ schedule.key }}/edit" method="post">
-				<div style="padding: .2em;">
-					<label for="start-time-picker">Start time:</label>
-					<input type="text" name="start-time-picker" id="start-time-picker" value="{{ start_time }}" />
-				</div>
-				<div style="padding: .2em;">
-					<label for="end-time-picker">End time:</label>
-					<input type="text" name="end-time-picker" id="end-time-picker" value="{{ end_time }}" />
-				</div>
+	<div class="span9 offset1">
+		<div class="row">
+			<form class="form-horizontal" action="/schedule/{{ schedule.key }}/add" method="post">
+				<fieldset>
+					<div class="control-group">
+						<label for="add-item-name-textbox">Add Subject:</label>
+						<div class="controls">
+							<input type="text" name="name" id="add-item-name-textbox"></input>
+							<input type="submit" class="btn btn-primary" value="Add"></input>
+						</div>
+					</div>
+				</fieldset>
 			</form>
 		</div>
 
 		<br />
+
+		<div class="row well">
+			<form id="edit-times-container" class="form-horizontal" action="/schedule/{{ schedule.key }}/edit" method="post">
+				<fieldset>
+
+					<div class="control-group">
+						<div class="controls">
+							<label class="checkbox">
+								<input type="checkbox" id="check-enable-breaks">
+									Enable breaks between subjects.
+								</input>
+							</label>
+						</div>
+					</div>
+
+					<div class="control-group">
+						<div class="controls">
+							<label class="checkbox">
+								<input type="checkbox" id="check-enable-notifications">
+									Enable desktop notifications when it's time to change subjects.
+								</input>
+							</label>
+						</div>
+					</div>
+
+					<div class="control-group">
+						<label for="start-time-picker">Start time:</label>
+						<div class="controls">
+							<input type="text" name="start-time-picker" id="start-time-picker" value="{{ start_time }}" />
+						</div>
+					</div>
+					<div class="control-group">
+						<label for="end-time-picker">End time:</label>
+						<div class="controls">
+							<input type="text" name="end-time-picker" id="end-time-picker" value="{{ end_time }}" />
+						</div>
+					</div>
+				</fieldset>
+			</form>
+		</div>
 	</div>
 
 </div>
+
+<br /><br />
 {% endblock %}

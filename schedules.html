@@ -22,7 +22,7 @@
 </script>
 
 <div class="row">
-	<div class="span14">
+	<div class="span12">
 		<form action="/add_schedule" method="post">
 			<fieldset>
 				<label for="add-schedule-name">Add Schedule:</label>
@@ -38,9 +38,9 @@
 <br />
 
 <div class="row">
-	<div class="span14">
+	<div class="span12">
 		{% for s in schedules %}
-		<div class="span14">
+		<div class="span12">
 			<ul class="schedule-list">
 				<li>
 					<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>

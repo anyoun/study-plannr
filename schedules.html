@@ -1,111 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>StudyPlannr.com</title>
-    <meta name="description" content="Create and follow study schedules to help keep you on track.">
-    <meta name="author" content="Will Thomas">
+{% extends "base.html" %}
 
-    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
-    <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+{% block title %}StudyPlannr{% endblock %}
 
-    <!-- Le styles -->
-    <!-- <link href="../bootstrap.css" rel="stylesheet"> -->
-	<link rel="stylesheet/less" href="/stylesheets/bootstrap/bootstrap.less">
-	<script src="/scripts/less.min.js"></script>
-    <style type="text/css">
-      body {
-        padding-top: 60px;
-      }
-    </style>
-	<script type="application/javascript" src="/scripts/jquery.min.js"></script>
-	<script type="application/javascript" src="/scripts/jquery.jeditable.mini.js"></script>
+{% block head %}
+<script type="application/javascript" src="/scripts/jquery.jeditable.mini.js"></script>
+{% endblock %}
 
-    <!-- Le fav and touch icons -->
-    <link rel="shortcut icon" href="images/favicon.ico">
-    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png">
-  </head>
+{% block content %}
+<script>
+	$(document).ready(function() {
+		{% for s in schedules %}
+		$('#{{s.key}}').editable('/schedule/{{ s.key }}/rename', {
+			tooltip	  : 'Click to change schedule name.',
+        		indicator : '<span class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></span>',
+        		cssclass  : 'schedule-name-editing',
+        		style	  : 'display: inline',
+        		onblur    : 'submit',
+		});
+		{% endfor %}
+	});  
+</script>
 
-  <body>
-	
-	<script>
-		$(document).ready(function() {
-			{% for s in schedules %}
-			$('#{{s.key}}').editable('/schedule/{{ s.key }}/rename', {
-				tooltip	  : 'Click to change schedule name.',
-         		indicator : '<span class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></span>',
-         		cssclass  : 'schedule-name-editing',
-         		style	  : 'display: inline',
-         		onblur    : 'submit',
-			});
-			{% endfor %}
-		});  
-	</script>
+<div class="row">
+	<div class="span14">
+        {% for s in schedules %}
+		<div class="span14">
+			<ul class="schedule-list">
+	    		<li>
+	    			<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>
+	    			<div class="schedule-details">Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</div>
+	    			<div class="schedule-buttons">
+		    		    <a href="/schedule/{{ s.key }}">Edit</a>
+		    			<form class="link-form" action="/schedule/{{ s.key }}/remove" method="post">
+		    				<input class="link-button" type="submit" value="Remove"></input>
+		    			</form>
+		    			<a href="/schedule/{{ s.key }}">Follow</a>
+	    			</div>
+	    		</li>
+		    </ul>
+		</div>
+		{% empty %}
+		<div class="welcome-message">
+			You don't have any schedules yet. Add one below to get started.
+		</div>
+		{% endfor %}
+	</div>
+</div><!-- /row -->
 
-    <div class="topbar">
-      <div class="fill">
-        <div class="container">
-          <a class="brand" href="/">StudyPlannr.com</a>
-          <ul class="nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div class="container">
-
-		<div class="row">
-			<div class="span14">
-		        {% for s in schedules %}
-				<div class="span14">
-					<ul class="schedule-list">
-			    		<li>
-			    			<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>
-			    			<div class="schedule-details">Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</div>
-			    			<div class="schedule-buttons">
-				    		    <a href="/schedule/{{ s.key }}">Edit</a>
-				    			<form class="link-form" action="/schedule/{{ s.key }}/remove" method="post">
-				    				<input class="link-button" type="submit" value="Remove"></input>
-				    			</form>
-				    			<a href="/schedule/{{ s.key }}">Follow</a>
-			    			</div>
-			    		</li>
-				    </ul>
+<div class="row">
+	<div class="span14">
+		<form action="/add_schedule" method="post">
+			<fieldset>
+				<label for="add-schedule-name">Add Schedule:</label>
+				<div class="input">
+					<input type="text" name="name" id="add-schedule-name" class="name-textbox"></input>
+						<input type="submit" value="Add" id="add-schedule-button" class="btn primary"></input>
 				</div>
-				{% empty %}
-				<div class="welcome-message">
-					You don't have any schedules yet. Add one below to get started.
-				</div>
-				{% endfor %}
-			</div>
-		</div><!-- /row -->
-		
-		<div class="row">
-			<div class="span14">
-				<form action="/add_schedule" method="post">
-					<fieldset>
-						<label for="add-schedule-name">Add Schedule:</label>
-						<div class="input">
-							<input type="text" name="name" id="add-schedule-name" class="name-textbox"></input>
-								<input type="submit" value="Add" id="add-schedule-button" class="btn primary"></input>
-						</div>
-					</fieldset>
-				</form>
-			</div>
-		</div><!-- /row -->
-
-      <footer>
-        <p>&copy; Will Thomas 2011-2012</p>
-      </footer>
-
-    </div> <!-- /container -->
-
-  </body>
-</html>
+			</fieldset>
+		</form>
+	</div>
+</div><!-- /row -->
+{% endblock %}

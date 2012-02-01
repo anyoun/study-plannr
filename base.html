@@ -21,6 +21,7 @@
       }
     </style>
 	<script type="application/javascript" src="/scripts/jquery.min.js"></script>
+	<script type="application/javascript" src="/scripts/bootstrap-dropdown.js"></script>
 	
 	{% block head %}{% endblock %}
 
@@ -36,15 +37,37 @@
     <div class="topbar">
       <div class="fill">
         <div class="container">
-          <a class="brand" href="/">StudyPlannr.com</a>
+          <a class="brand" href="/">StudyPlannr</a>
           <ul class="nav">
             <li class="active"><a href="/">Home</a></li>
             <li><a href="/about">About</a></li>
             <li><a href="/schedules">Schedules</a></li>
           </ul>
+			<ul class="nav secondary-nav">
+				{% if user_name %}
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle">{{ user_name }}</a>
+						<ul class="dropdown-menu">
+							<li>
+								<p>Signed in using Google.</p>
+							</li>
+							<li class="divider"></li>
+							<li>
+								<a href="{{logout_link}}">Sign out</a>
+							</li>
+						</ul>
+					</li>
+				{% else %}
+					<li><a href="{{login_link}}">Sign in</a></li>
+				{% endif %}
+			</ul>
         </div>
       </div>
     </div>
+
+<script type="text/javascript">
+$('.topbar').dropdown()
+</script>
 
     <div class="container">
 

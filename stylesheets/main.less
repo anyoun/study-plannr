@@ -1,13 +1,6 @@
 @import "bootstrap/variables.less"; 
 @import "bootstrap/mixins.less"; 
 
-.schedule-name {
-  border: 1px solid transparent;
-  height: 1.2em;
-}
-.schedule-name-editing {
-  height: 1.2em;
-}
 .link-button {
 	border: none;
 	background: transparent;
@@ -16,11 +9,25 @@
   .box-shadow(none);
   color: @linkColor;
   text-decoration: none;
-  line-height: inherit;
+  line-height: @baseLineHeight;
   font-weight: inherit;
+  margin: 0px;
+  padding: 0px;
   &:hover {
     color: @linkColorHover;
     text-decoration: underline;
+  }
+}
+
+/*Labels in dropdown menu*/
+.topbar .dropdown-menu,
+.dropdown-menu {
+    p {
+    display: block;
+    padding: 4px 15px;
+    clear: both;
+    font-weight: normal;
+    line-height: 18px;
   }
 }
 
@@ -37,7 +44,7 @@
 }
 
 .color-bar(@primaryColor) {
-  width: 2em;
+  width: 20px;
 	float: left;
 	height: 100%;
 	border-left: 1px solid black;
@@ -63,21 +70,24 @@
   border-bottom: 1px solid black;
 }
 
-div.subject-label {
-	position: relative;
-	top: -.5em;
+.subject-label {
+  position: relative;
+  top: -.5em;
   float: left; 
   margin-left: 5px;
+  width: (@gridColumnWidth * 2);
 }
 
-/*Labels in dropdown menu*/
-.topbar .dropdown-menu,
-.dropdown-menu {
-    p {
-    display: block;
-    padding: 4px 15px;
-    clear: both;
-    font-weight: normal;
-    line-height: 18px;
+.schedule-name {
+  width: 215px;
+  height: @baseLineHeight + 2;
+  border: transparent solid 0px;
+}
+.schedule-name-editing {
+  padding: 0px;
+  margin: 0px;
+  input {
+    margin: 0px;
+    padding: 0px;
   }
 }

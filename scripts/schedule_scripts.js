@@ -29,10 +29,15 @@ $(document).ready(function() {
     });
 
     $('#error-box').hide();
+
+    var showError = function(message){
+    	console.log('Showing error: ' + message);
+    	$('#error-box-message').text(message);
+    	$('#error-box').show();
+    };
+
     $('#error-box').ajaxError(function(event, jqXHR, ajaxSettings, thrownError){
-    	console.log('AJAX error: ' + thrownError)
-    	$(this).text('AJAX error: ' + thrownError)
-    	$(this).show();
+    	showError('AJAX error: ' + thrownError);
     });
     
 	$('.subject-name').each(function(i,subjectName) {

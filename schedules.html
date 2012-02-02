@@ -3,19 +3,21 @@
 {% block title %}StudyPlannr{% endblock %}
 
 {% block head %}
-<script type="application/javascript" src="/scripts/jquery.jeditable.mini.js"></script>
+<script type="application/javascript" src="/scripts/jquery.jeditable.min.js"></script>
 {% endblock %}
 
 {% block content %}
 <script>
 	$(document).ready(function() {
 		{% for s in schedules %}
-		$('#{{s.key}}').editable('/schedule/{{ s.key }}/rename', {
-			tooltip	  : 'Click to change schedule name.',
-			indicator : '<span class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></span>',
-			cssclass  : 'schedule-name-editing',
-			style	  : 'display: inline',
-			onblur	  : 'submit',
+		$('#{{s.key}}').editable('/schedule/{{ s.key }}/edit', {
+			tooltip		: 'Click to change schedule name.',
+			indicator	: '<span class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></span>',
+			cssclass	: 'schedule-name-editing',
+			onblur		: 'submit',
+			height		: 'none',
+			width		: 'none',
+			name 		: 'name',
 		});
 		{% endfor %}
 	});	 
@@ -43,12 +45,12 @@
 		<div class="span12">
 			<ul class="schedule-list">
 				<li>
-					<strong><span class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</span></strong>
-					<p>Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</p>
-					<form style="display:span" action="/schedule/{{ s.key }}/remove" method="post">
-						<a href="/schedule/{{ s.key }}">Edit</a>
-						<a href="/schedule/{{ s.key }}">Follow</a>
-						<input class="link-button" type="submit" value="Remove"></input>
+					<strong><div class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</div></strong>
+					<div>Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</div>
+					<form style="display:span;" action="/schedule/{{ s.key }}/remove" method="post">
+						<a href="/schedule/{{ s.key }}" class="btn btn-small" style="vertical-align:top;">Edit</a>
+						<a href="/schedule/{{ s.key }}" class="btn  btn-small" style="vertical-align:top;">Follow</a>
+						<input class="btn btn-small" type="submit" value="Remove" style="vertical-align:top;"></input>
 					</form>
 				</li>
 			</ul>

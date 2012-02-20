@@ -12,7 +12,7 @@
 <script type="application/javascript" src="/scripts/schedule_scripts.js"></script>
 <script type="application/javascript" src="/scripts/schedule_scripts2.js"></script>
 <script type="text/javascript">
-	var scheduleKey = '{{ schedule.key }}';
+	var scheduleKey = '{{ schedule.key() }}';
 </script>
 {% endblock %}
 
@@ -29,7 +29,7 @@
 	<div class="span2" style="height: 50em;">	
 		{% for i in items %}
 			<div id="item-row-{{i.key}}" class="row" style="height: {{ i.pct }}%;">
-				<div class="color-bar-{{forloop.counter}} {%if forloop.last%}color-bar-last{%endif%}" 
+				<div class="color-bar-{{loop.index}} {%if loop.last%}color-bar-last{%endif%}" 
 				     style="background-color: {{ i.get_color }};">
 					&nbsp;
 				</div>

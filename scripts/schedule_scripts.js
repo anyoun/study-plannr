@@ -48,7 +48,6 @@ $(document).ready(function() {
 	 		indicator : '<div class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></div>',
 	 		cssclass  : 'subject-name-editing',
 	 		onblur    : 'submit',
-//			name	  : 'name',
 		});
 	});
 	

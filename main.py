@@ -5,7 +5,8 @@ import re
 
 import json
 
-from google.appengine.ext.webapp import template
+#from google.appengine.ext.webapp import template
+from jinja2 import Template, Environment, FileSystemLoader
 from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app, login_required
@@ -32,6 +33,16 @@ class ScheduleItem(db.Model):
      
 TIME_FORMAT_STRING = '%I:%M %p'
 ADD_FAKE_DELAYS = False
+
+def date_filter(value, format='%x'):
+    return value.strftime(format)
+env = Environment(loader=FileSystemLoader('.'), autoescape=True)
+env.filters['date'] = date_filter
+
+class BaseRequestHandler(webapp.RequestHandler):
+    def return_template(self, template_name, data):
+        t = env.get_template(template_name)
+        self.response.out.write(t.render(data))
 
 #COLOR_LIST = [ '#0F4FA8', '#FFCA00', '#FF6200' ]
 COLOR_LIST = ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)', 'rgb(255,127,0)', 'rgb(255,255,51)', 'rgb(166,86,40)', 'rgb(247,129,191)', 'rgb(153,153,153)']
@@ -81,7 +92,7 @@ class DateTimeEncoder(json.JSONEncoder):
             }
         return json.JSONEncoder.default(self, obj)
 
-class HomePage(webapp.RequestHandler):
+class HomePage(BaseRequestHandler):
     def get(self):
         user = users.get_current_user()
         has_user = user is not None
@@ -91,10 +102,9 @@ class HomePage(webapp.RequestHandler):
             'logout_link' : users.create_logout_url(self.request.uri),
             'user_name' : user.nickname() if has_user else None,
         }
-        path = os.path.join(os.path.dirname(__file__), 'index.html')
-        self.response.out.write(template.render(path, template_values))
+        self.return_template('index.html', template_values)
 
-class SchedulesPage(webapp.RequestHandler):
+class SchedulesPage(BaseRequestHandler):
     @login_required
     def get(self, format):
         user = users.get_current_user()
@@ -108,8 +118,7 @@ class SchedulesPage(webapp.RequestHandler):
                 'logout_link' : users.create_logout_url(self.request.uri),
                 'user_name' : user.nickname(),
             }        
-            path = os.path.join(os.path.dirname(__file__), 'schedules.html')
-            self.response.out.write(template.render(path, template_values))
+            self.return_template('schedules.html', template_values)
 
 def GetSchedule(schedule_key):
     user = users.get_current_user()
@@ -173,7 +182,7 @@ def return_json(request_handler, obj):
     request_handler.response.headers['Content-Type'] = 'application/json'
     request_handler.response.out.write(json.dumps(obj, cls=DateTimeEncoder))
     
-class ViewSchedule(webapp.RequestHandler):
+class ViewSchedule(BaseRequestHandler):
     @login_required
     def get(self, schedule_key, format):
         schedule = GetSchedule(schedule_key)
@@ -195,10 +204,9 @@ class ViewSchedule(webapp.RequestHandler):
                 'start_time' : start_time.strftime(TIME_FORMAT_STRING),
                 'end_time' : end_time.strftime(TIME_FORMAT_STRING),
             }
-            path = os.path.join(os.path.dirname(__file__), 'schedule.html')
-            self.response.out.write(template.render(path, template_values))
+            self.return_template('schedule.html', template_values)
 
-class AddSchedule(webapp.RequestHandler):
+class AddSchedule(BaseRequestHandler):
     def post(self):
         user = users.get_current_user()
         if not user:
@@ -216,7 +224,7 @@ class AddSchedule(webapp.RequestHandler):
         new_item.put()
         self.redirect('/schedule/' + str(new_schedule.key()))
 
-class AddScheduleItem(webapp.RequestHandler):
+class AddScheduleItem(BaseRequestHandler):
     def post(self, schedule_key):
         schedule = GetSchedule(schedule_key)
         if schedule is None:
@@ -231,7 +239,7 @@ class AddScheduleItem(webapp.RequestHandler):
         new_item.put()
         self.redirect('/schedule/' + str(schedule.key()))
         
-class EditScheduleItem(webapp.RequestHandler):
+class EditScheduleItem(BaseRequestHandler):
     def post(self, schedule_key, item_key, action):
         item = ScheduleItem.get(db.Key(item_key))
         if item.schedule.user != users.get_current_user():
@@ -259,7 +267,7 @@ class EditScheduleItem(webapp.RequestHandler):
         (calc_items, start_time, end_time) = calculate_schedule_items(item.schedule)
         return_json(self, calc_items)
 
-class EditSchedule(webapp.RequestHandler):
+class EditSchedule(BaseRequestHandler):
     def parse_time(self, s):
         t = datetime.strptime(s, '%I:%M %p').time()
         #logging.info("String: '%s' time: '%s'" % (s,t))
@@ -290,7 +298,7 @@ class EditSchedule(webapp.RequestHandler):
         (calc_items, start_time, end_time) = calculate_schedule_items(schedule)
         return_json(self, calc_items)
         
-class RemoveSchedule(webapp.RequestHandler):
+class RemoveSchedule(BaseRequestHandler):
     def post(self, schedule_key):
         schedule = GetSchedule(schedule_key)
         if schedule.user != users.get_current_user():
@@ -298,7 +306,6 @@ class RemoveSchedule(webapp.RequestHandler):
             return
         schedule.delete()
         self.redirect('/')
-
         
 application = webapp.WSGIApplication(
                                      [('/', HomePage),

@@ -10,7 +10,7 @@
 <script>
 	$(document).ready(function() {
 		{% for s in schedules %}
-		$('#{{s.key}}').editable('/schedule/{{ s.key }}/edit', {
+		$('#{{s.key()}}').editable('/schedule/{{ s.key() }}/edit', {
 			tooltip		: 'Click to change schedule name.',
 			indicator	: '<span class="schedule-name-loading-placeholder"><img src="/images/ajax-loader.gif"></span>',
 			cssclass	: 'schedule-name-editing',
@@ -45,17 +45,17 @@
 		<div class="span12">
 			<ul class="schedule-list">
 				<li>
-					<strong><div class="schedule-name" id="{{s.key}}">{{ s.name|escape }}</div></strong>
-					<div>Created on {{ s.date|date }} - {{ s.get_NumSubjects }} subjects</div>
+					<strong><div class="schedule-name" id="{{s.key()}}">{{ s.name|escape }}</div></strong>
+					<div>Created on {{ s.date|date }} - {{ s.get_NumSubjects() }} subjects</div>
 					<form style="display:span;" action="/schedule/{{ s.key }}/remove" method="post">
-						<a href="/schedule/{{ s.key }}" class="btn btn-small" style="vertical-align:top;">Edit</a>
-						<a href="/schedule/{{ s.key }}" class="btn  btn-small" style="vertical-align:top;">Follow</a>
+						<a href="/schedule/{{ s.key() }}" class="btn btn-small" style="vertical-align:top;">Edit</a>
+						<a href="/schedule/{{ s.key() }}" class="btn  btn-small" style="vertical-align:top;">Follow</a>
 						<input class="btn btn-small" type="submit" value="Remove" style="vertical-align:top;"></input>
 					</form>
 				</li>
 			</ul>
 		</div>
-		{% empty %}
+		{% else %}
 		<div>
 			<h2>You don't have any schedules yet. Add one below to get started.</h2>
 		</div>

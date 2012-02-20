@@ -19,6 +19,8 @@ class Schedule(db.Model):
     date = db.DateTimeProperty(auto_now_add=True)
     start_time = db.TimeProperty(default=time(9,0,0))
     end_time = db.TimeProperty(default=time(17,0,0))
+    enable_breaks = db.BooleanProperty(default=False)
+    break_time_sec = db.IntegerProperty(default=600)
     def get_NumSubjects(self):
         return self.scheduleitem_set.count()
 
@@ -33,6 +35,7 @@ ADD_FAKE_DELAYS = False
 
 #COLOR_LIST = [ '#0F4FA8', '#FFCA00', '#FF6200' ]
 COLOR_LIST = ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)', 'rgb(255,127,0)', 'rgb(255,255,51)', 'rgb(166,86,40)', 'rgb(247,129,191)', 'rgb(153,153,153)']
+BREAK_COLOR = ['rgb(128,128,128)']
 def get_color_for_item(scheduleItem):
     return COLOR_LIST[scheduleItem['ordinal'] % len(COLOR_LIST)]
 def time_diff(x, y):
@@ -126,17 +129,39 @@ def calculate_schedule_items(schedule):
     end_time = schedule.end_time
     total_duration = time_diff(end_time, start_time)
     current_time = start_time
-    for i in items:
+    for (index, i) in enumerate(items):
+        if index != 0 and schedule.enable_breaks:
+            calc_items.append({
+                'key' : '',
+                'name' : 'Break',
+                'ordinal': i.ordinal - 0.5,
+                'pct': schedule.break_time_sec / total_duration,
+                'start_time': current_time.strftime(TIME_FORMAT_STRING),
+                'end_time': add_time(current_time, schedule.break_time_sec).strftime(TIME_FORMAT_STRING),
+                'get_color': BREAK_COLOR,
+            })
+
         ci = { }
         ci['key'] = str(i.key())
         ci['name'] = i.name
         ci['ordinal'] = i.ordinal
         ci['pct'] = 100.0 * i.time_weight / total_weight
-        ci['start_time'] = current_time.strftime(TIME_FORMAT_STRING)
+        
+        if schedule.enable_breaks and index != 0:
+            item_start = add_time(current_time, -schedule.break_time_sec / 2)
+        else:
+            item_start = current_time
+        ci['start_time'] = item_start.strftime(TIME_FORMAT_STRING)
+        
         duration = multi_duration(total_duration, ci['pct']/100.0)
         current_time = round_time_5min(add_time(current_time, duration))
-        ci['end_time'] = current_time.strftime(TIME_FORMAT_STRING)
-        ci['ordinal'] = i.ordinal
+
+        if schedule.enable_breaks:
+            item_end = add_time(current_time, schedule.break_time_sec / 2)
+        else:
+            item_end = current_time
+        ci['end_time'] = item_end.strftime(TIME_FORMAT_STRING)
+
         ci['get_color'] = get_color_for_item(ci)
         calc_items.append(ci)
     if len(calc_items) > 0:
@@ -248,18 +273,22 @@ class EditSchedule(webapp.RequestHandler):
             return
         if ADD_FAKE_DELAYS:
             sleep(1)
+        
         if self.valid(self.request.get("name")):
             schedule.name = self.request.get("name")
             schedule.put()
             self.response.out.write(schedule.name)
-        elif self.valid(self.request.get("start_time")) and self.valid(self.request.get("end_time")):
-            schedule.start_time = self.parse_time(self.request.get("start_time"))
+            return
+        if self.valid(self.request.get("enable_breaks")):
+            schedule.enable_breaks = self.request.get("enable_breaks").lower() in ["true", "on"]
+        if self.valid(self.request.get("start_time")):
+            schedule.start_time = self.parse_time(self.request.get("start_time"))            
+        if self.valid(self.request.get("end_time")):
             schedule.end_time = self.parse_time(self.request.get("end_time"))
-            schedule.put()
-            (calc_items, start_time, end_time) = calculate_schedule_items(schedule)
-            return_json(self, calc_items)
-        else:
-            raise Exception('Unknown mode')
+        
+        schedule.put()
+        (calc_items, start_time, end_time) = calculate_schedule_items(schedule)
+        return_json(self, calc_items)
         
 class RemoveSchedule(webapp.RequestHandler):
     def post(self, schedule_key):

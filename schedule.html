@@ -10,6 +10,7 @@
 <link type="text/css" rel="stylesheet" href="/stylesheets/jquery-ui-timepicker.css" />
 <script type="application/javascript" src="/scripts/bootstrap-alert.js"></script>
 <script type="application/javascript" src="/scripts/schedule_scripts.js"></script>
+<script type="application/javascript" src="/scripts/schedule_scripts2.js"></script>
 <script type="text/javascript">
 	var scheduleKey = '{{ schedule.key }}';
 </script>
@@ -25,7 +26,7 @@
 
 <div class="row">
 
-	<div class="span2" style="height: 30em;">	
+	<div class="span2" style="height: 50em;">	
 		{% for i in items %}
 			<div id="item-row-{{i.key}}" class="row" style="height: {{ i.pct }}%;">
 				<div class="color-bar-{{forloop.counter}} {%if forloop.last%}color-bar-last{%endif%}" 
@@ -52,10 +53,11 @@
 
 	<div class="span8 offset2">
 		<div class="row">
+			<legend>Add Subject</legend>
 			<form class="form-horizontal" action="/schedule/{{ schedule.key }}/add" method="post">
 				<fieldset>
 					<div class="control-group">
-						<label for="add-item-name-textbox">Add Subject:</label>
+						<label for="add-item-name-textbox">Name:</label>
 						<div class="controls">
 							<input type="text" name="name" id="add-item-name-textbox"></input>
 							<input type="submit" class="btn btn-primary" value="Add"></input>
@@ -68,14 +70,14 @@
 		<br />
 
 		<div class="row">
-			<legend>Options</legend>
+			<legend>Schedule Options</legend>
 			<form id="edit-times-container" class="form-horizontal" action="/schedule/{{ schedule.key }}/edit" method="post">
 				<fieldset>
 
 					<div class="control-group">
 						<div class="controls">
 							<label class="checkbox">
-								<input type="checkbox" id="check-enable-breaks">
+								<input type="checkbox" name="enable_breaks" id="check-enable-breaks"  {% if schedule.enable_breaks %} checked {% endif %}>
 									Enable breaks between subjects.
 								</input>
 							</label>
@@ -85,7 +87,7 @@
 					<div class="control-group">
 						<div class="controls">
 							<label class="checkbox">
-								<input type="checkbox" id="check-enable-notifications">
+								<input type="checkbox" name="enable_notifications" id="check-enable-notifications">
 									Enable desktop notifications when it's time to change subjects.
 								</input>
 							</label>

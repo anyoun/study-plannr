@@ -40,6 +40,16 @@
   window.__iced_k = function() {};
 
   $(function() {
+    var FullRerender;
+    FullRerender = function(schedule) {
+      var end_time;
+      end_time = schedule[schedule.length - 1].end_time;
+      return $("#schedule-container").html(ich.schedule({
+        items: schedule,
+        scheduleKey: scheduleKey,
+        end_time: end_time
+      }));
+    };
     return $("#check-enable-breaks").click(function() {
       var checked, post_data, response_data, status, url, xhr, ___iced_passed_deferral, __iced_deferrals,
         _this = this;
@@ -62,12 +72,12 @@
               return xhr = arguments[2];
             };
           })(),
-          lineno: 6
+          lineno: 14
         }));
         __iced_deferrals._fulfill();
       })(function() {
         console.log("Changed enable-breaks");
-        return rerender(response_data);
+        return FullRerender(response_data);
       });
     });
   });

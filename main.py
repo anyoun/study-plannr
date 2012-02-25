@@ -5,7 +5,6 @@ import re
 
 import json
 
-#from google.appengine.ext.webapp import template
 from jinja2 import Template, Environment, FileSystemLoader
 from google.appengine.api import users
 from google.appengine.ext import webapp
@@ -44,11 +43,6 @@ class BaseRequestHandler(webapp.RequestHandler):
         t = env.get_template(template_name)
         self.response.out.write(t.render(data))
 
-#COLOR_LIST = [ '#0F4FA8', '#FFCA00', '#FF6200' ]
-COLOR_LIST = ['rgb(228,26,28)', 'rgb(55,126,184)', 'rgb(77,175,74)', 'rgb(152,78,163)', 'rgb(255,127,0)', 'rgb(255,255,51)', 'rgb(166,86,40)', 'rgb(247,129,191)', 'rgb(153,153,153)']
-BREAK_COLOR = ['rgb(128,128,128)']
-def get_color_for_item(scheduleItem):
-    return COLOR_LIST[scheduleItem['ordinal'] % len(COLOR_LIST)]
 def time_diff(x, y):
     return 3600*(x.hour-y.hour) + 60*(x.minute-y.minute) + x.second-y.second
 def add_time(t, delta_seconds):
@@ -61,8 +55,6 @@ def add_time(t, delta_seconds):
     return time(int(td_hours), int(td_minutes), int(td_seconds))
 def multi_duration(td, factor):
     return td * factor
-    #total = td.seconds + td.days * 24 * 3600
-    #return timedelta(seconds = total * factor)
 def round_time_15min(t):
     if t.minute > 53:
         return time(t.hour + 1, 0, 0)
@@ -131,50 +123,48 @@ def GetSchedule(schedule_key):
 
 
 def calculate_schedule_items(schedule):
-    items = schedule.scheduleitem_set
+    items = list(schedule.scheduleitem_set)
     calc_items = []
     total_weight = sum(i.time_weight for i in items)
     start_time = schedule.start_time
     end_time = schedule.end_time
     total_duration = time_diff(end_time, start_time)
+    if schedule.enable_breaks:
+        total_duration_minus_breaks = total_duration - ((len(items) - 1) * schedule.break_time_sec)
+    else:
+        total_duration_minus_breaks = total_duration
     current_time = start_time
     for (index, i) in enumerate(items):
         if index != 0 and schedule.enable_breaks:
             calc_items.append({
-                'key' : '',
+                'key' : 'break',
                 'name' : 'Break',
-                'ordinal': i.ordinal - 0.5,
-                'pct': schedule.break_time_sec / total_duration,
+                'ordinal': i.ordinal + 1.5,
+                'pct': schedule.break_time_sec * 1.0 / total_duration * 100,
                 'start_time': current_time.strftime(TIME_FORMAT_STRING),
                 'end_time': add_time(current_time, schedule.break_time_sec).strftime(TIME_FORMAT_STRING),
-                'get_color': BREAK_COLOR,
+                'is_break': True,
             })
+            current_time = add_time(current_time, schedule.break_time_sec)
 
         ci = { }
         ci['key'] = str(i.key())
         ci['name'] = i.name
-        ci['ordinal'] = i.ordinal
-        ci['pct'] = 100.0 * i.time_weight / total_weight
+        ci['is_break'] = False
+        ci['ordinal'] = i.ordinal + 1
+        ci['start_time'] = current_time.strftime(TIME_FORMAT_STRING)
         
-        if schedule.enable_breaks and index != 0:
-            item_start = add_time(current_time, -schedule.break_time_sec / 2)
-        else:
-            item_start = current_time
-        ci['start_time'] = item_start.strftime(TIME_FORMAT_STRING)
-        
-        duration = multi_duration(total_duration, ci['pct']/100.0)
+        duration = multi_duration(total_duration_minus_breaks, i.time_weight / total_weight)
+        ci['pct'] = duration / total_duration * 100
         current_time = round_time_5min(add_time(current_time, duration))
 
-        if schedule.enable_breaks:
-            item_end = add_time(current_time, schedule.break_time_sec / 2)
-        else:
-            item_end = current_time
+        item_end = current_time
         ci['end_time'] = item_end.strftime(TIME_FORMAT_STRING)
 
-        ci['get_color'] = get_color_for_item(ci)
         calc_items.append(ci)
     if len(calc_items) > 0:
         calc_items[-1]['end_time'] = end_time.strftime(TIME_FORMAT_STRING)
+        calc_items[-1]['is_last'] = True
     current_time = end_time
     return (calc_items, start_time, end_time)
 

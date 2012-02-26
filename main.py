@@ -33,16 +33,6 @@ class ScheduleItem(db.Model):
 TIME_FORMAT_STRING = '%I:%M %p'
 ADD_FAKE_DELAYS = False
 
-def date_filter(value, format='%x'):
-    return value.strftime(format)
-env = Environment(loader=FileSystemLoader('.'), autoescape=True)
-env.filters['date'] = date_filter
-
-class BaseRequestHandler(webapp.RequestHandler):
-    def return_template(self, template_name, data):
-        t = env.get_template(template_name)
-        self.response.out.write(t.render(data))
-
 def time_diff(x, y):
     return 3600*(x.hour-y.hour) + 60*(x.minute-y.minute) + x.second-y.second
 def add_time(t, delta_seconds):
@@ -50,8 +40,6 @@ def add_time(t, delta_seconds):
     td_hours = total_seconds // 3600
     td_minutes = (total_seconds // 60) % 60
     td_seconds = total_seconds % 60
-    logging.info("Seconds: %s", total_seconds)
-    logging.info("%s %s %s", td_hours,td_minutes,td_seconds)
     return time(int(td_hours), int(td_minutes), int(td_seconds))
 def multi_duration(td, factor):
     return td * factor
@@ -84,6 +72,21 @@ class DateTimeEncoder(json.JSONEncoder):
             }
         return json.JSONEncoder.default(self, obj)
 
+def date_filter(value, format='%x'):
+    return value.strftime(format)
+env = Environment(loader=FileSystemLoader('.'), autoescape=True)
+env.filters['date'] = date_filter
+
+class BaseRequestHandler(webapp.RequestHandler):
+    def return_template(self, template_name, data):
+        t = env.get_template(template_name)
+        self.response.out.write(t.render(data))
+    def to_json(self, data):
+        return json.dumps(data, cls=DateTimeEncoder)
+    def return_json(self, data):
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.out.write(self.to_json(data))
+
 class HomePage(BaseRequestHandler):
     def get(self):
         user = users.get_current_user()
@@ -103,7 +106,7 @@ class SchedulesPage(BaseRequestHandler):
         schedules = Schedule.all()
         schedules.filter("user = ", user)
         if format == 'json':
-            return_json(self, list(schedules.run()))
+            self.return_json(list(schedules.run()))
         else:
             template_values = {
                 'schedules' : schedules,
@@ -120,7 +123,17 @@ def GetSchedule(schedule_key):
     if schedule.user != user:
         return None
     return schedule
-
+def GetJsonableSchedule(schedule):
+    (calc_items, start_time, end_time) = calculate_schedule_items(schedule)
+    schedule_json = {
+        'items': calc_items,
+        'name': schedule.name,
+        'key': str(schedule.key()),
+        'scheduleKey' : str(schedule.key()),
+        'start_time' : start_time.strftime(TIME_FORMAT_STRING),
+        'end_time' : end_time.strftime(TIME_FORMAT_STRING),
+    }
+    return schedule_json
 
 def calculate_schedule_items(schedule):
     items = list(schedule.scheduleitem_set)
@@ -167,10 +180,6 @@ def calculate_schedule_items(schedule):
         calc_items[-1]['is_last'] = True
     current_time = end_time
     return (calc_items, start_time, end_time)
-
-def return_json(request_handler, obj):
-    request_handler.response.headers['Content-Type'] = 'application/json'
-    request_handler.response.out.write(json.dumps(obj, cls=DateTimeEncoder))
     
 class ViewSchedule(BaseRequestHandler):
     @login_required
@@ -179,20 +188,21 @@ class ViewSchedule(BaseRequestHandler):
         if schedule is None:
             self.redirect('/')
             return
-        (calc_items, start_time, end_time) = calculate_schedule_items(schedule)
+        schedule_json = GetJsonableSchedule(schedule)
         has_user = users.get_current_user() is not None
+        
         if format == 'json':
-            return_json(self, calc_items)
-        else:    
+            self.return_json(schedule_json)
+        else:
             template_values = {
                 'schedule' : schedule,
-                'items' : calc_items,
+                'originalSchedule' : self.to_json(schedule_json),
                 'is_loggedin' : has_user,
                 'login_link' : users.create_login_url(self.request.uri),
                 'logout_link' : users.create_logout_url(self.request.uri),
+                'start_time' : schedule.start_time.strftime(TIME_FORMAT_STRING),
+                'end_time' : schedule.end_time.strftime(TIME_FORMAT_STRING),
                 'user_name' : users.get_current_user().nickname() if has_user else None,
-                'start_time' : start_time.strftime(TIME_FORMAT_STRING),
-                'end_time' : end_time.strftime(TIME_FORMAT_STRING),
             }
             self.return_template('schedule.html', template_values)
 
@@ -227,7 +237,7 @@ class AddScheduleItem(BaseRequestHandler):
         new_item.time_weight = 1.0
         new_item.ordinal = 0 if last_item is None else last_item.ordinal + 1
         new_item.put()
-        self.redirect('/schedule/' + str(schedule.key()))
+        self.return_json(GetJsonableSchedule(schedule))
         
 class EditScheduleItem(BaseRequestHandler):
     def post(self, schedule_key, item_key, action):
@@ -254,8 +264,7 @@ class EditScheduleItem(BaseRequestHandler):
         else:
             raise Exception('Unknown mode')
         #Return all schedule items
-        (calc_items, start_time, end_time) = calculate_schedule_items(item.schedule)
-        return_json(self, calc_items)
+        self.return_json(GetJsonableSchedule(item.schedule))
 
 class EditSchedule(BaseRequestHandler):
     def parse_time(self, s):
@@ -285,8 +294,7 @@ class EditSchedule(BaseRequestHandler):
             schedule.end_time = self.parse_time(self.request.get("end_time"))
         
         schedule.put()
-        (calc_items, start_time, end_time) = calculate_schedule_items(schedule)
-        return_json(self, calc_items)
+        self.return_json(GetJsonableSchedule(schedule))
         
 class RemoveSchedule(BaseRequestHandler):
     def post(self, schedule_key):

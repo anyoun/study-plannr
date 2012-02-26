@@ -14,6 +14,7 @@
 <script type="application/javascript" src="/scripts/schedule_scripts2.js"></script>
 <script type="text/javascript">
 	var scheduleKey = '{{ schedule.key() }}';
+	var originalSchedule = {{ originalSchedule|safe }};
 </script>
 
 {% raw %}
@@ -57,37 +58,14 @@
 
 <div class="row">
 
-	<div id="schedule-container" class="span2" style="height: 50em;">	
-		{% for i in items %}
-			<div id="item-row-{{i.key}}" class="row" style="height: {{ i.pct }}%;">
-				<div class="color-bar-{%if not i.is_break%}{{i.ordinal}}{%else%}break{%endif%} {%if loop.last%}color-bar-last{%endif%}" 
-				     style="background-color: {{ i.get_color }};">
-					&nbsp;
-				</div>
-				<div class="subject-label">
-					<div id="item-start-time-{{i.key}}">{{ i.start_time }}</div>
-					{% if not i.is_break %}
-						<strong><div id="subject-name-{{i.key}}" class="subject-name" data-key="{{i.key}}">{{ i.name|escape }}</div></strong>
-						<div>
-							<a class="item-more-link" href="/schedule/{{schedule.key()}}/{{i.key}}/more">More</a>
-							<a class="item-less-link" href="/schedule/{{schedule.key()}}/{{i.key}}/less">Less</a>
-							<a class="item-remove-link" href="/schedule/{{schedule.key()}}/{{i.key}}/remove">Remove</a>
-						</div>
-					{% endif %}
-				</div>
-			</div>
-		{% endfor %}
-		<div>
-			<div id="items-end-time" class="subject-label">
-			{{ end_time }}
-			</div>
-		</div>
+	<div id="schedule-container" class="span2" style="height: 50em;">
+		<!-- This is filled in with client-side rendering. -->
 	</div>
 
 	<div class="span8 offset2">
 		<div class="row">
 			<legend>Add Subject</legend>
-			<form class="form-horizontal" action="/schedule/{{ schedule.key() }}/add" method="post">
+			<form id="add-subject-form" class="form-horizontal" action="/schedule/{{ schedule.key() }}/add" method="post">
 				<fieldset>
 					<div class="control-group">
 						<label for="add-item-name-textbox">Name:</label>

@@ -40,16 +40,115 @@
   window.__iced_k = function() {};
 
   $(function() {
-    var FullRerender;
-    FullRerender = function(schedule) {
-      var end_time;
-      end_time = schedule[schedule.length - 1].end_time;
-      return $("#schedule-container").html(ich.schedule({
-        items: schedule,
-        scheduleKey: scheduleKey,
+    var FullRerender, options, postAndRefresh, timePickerClosed;
+    timePickerClosed = function(time, picker) {
+      var end_time, post_data, response_data, start_time, status, url, xhr, ___iced_passed_deferral, __iced_deferrals,
+        _this = this;
+      ___iced_passed_deferral = iced.findDeferral(arguments);
+      console.log(picker.id + " set to " + time);
+      start_time = $('#start-time-picker').val();
+      end_time = $('#end-time-picker').val();
+      console.log("Start: " + start_time + " End: " + end_time);
+      url = '/schedule/' + scheduleKey + '/edit';
+      post_data = {
+        start_time: start_time,
         end_time: end_time
-      }));
+      };
+      (function(__iced_k) {
+        __iced_deferrals = new iced.Deferrals(__iced_k, {
+          parent: ___iced_passed_deferral,
+          filename: "/Users/will/Dropbox/medderschedule/scripts/schedule_scripts2.iced",
+          funcname: "timePickerClosed"
+        });
+        $.post(url, post_data, __iced_deferrals.defer({
+          assign_fn: (function() {
+            return function() {
+              response_data = arguments[0];
+              status = arguments[1];
+              return xhr = arguments[2];
+            };
+          })(),
+          lineno: 9
+        }));
+        __iced_deferrals._fulfill();
+      })(function() {
+        console.log('Edit complete.');
+        return FullRerender(response_data);
+      });
     };
+    options = {
+      showPeriod: true,
+      showLeadingZero: false,
+      showMinutesLeadingZero: false,
+      onClose: timePickerClosed
+    };
+    $('#start-time-picker').timepicker(options);
+    $('#end-time-picker').timepicker(options);
+    $('#add-subject-form').submit(function(event) {
+      var post_data, response_data, status, url, xhr, ___iced_passed_deferral, __iced_deferrals,
+        _this = this;
+      ___iced_passed_deferral = iced.findDeferral(arguments);
+      event.preventDefault();
+      url = $('#add-subject-form').attr('action');
+      post_data = {
+        name: $('#add-item-name-textbox').val()
+      };
+      (function(__iced_k) {
+        __iced_deferrals = new iced.Deferrals(__iced_k, {
+          parent: ___iced_passed_deferral,
+          filename: "/Users/will/Dropbox/medderschedule/scripts/schedule_scripts2.iced"
+        });
+        $.post(url, post_data, __iced_deferrals.defer({
+          assign_fn: (function() {
+            return function() {
+              response_data = arguments[0];
+              status = arguments[1];
+              return xhr = arguments[2];
+            };
+          })(),
+          lineno: 25
+        }));
+        __iced_deferrals._fulfill();
+      })(function() {
+        console.log('Post and refresh');
+        return FullRerender(response_data);
+      });
+    });
+    postAndRefresh = function(event) {
+      var response_data, status, xhr, ___iced_passed_deferral, __iced_deferrals,
+        _this = this;
+      ___iced_passed_deferral = iced.findDeferral(arguments);
+      event.preventDefault();
+      (function(__iced_k) {
+        __iced_deferrals = new iced.Deferrals(__iced_k, {
+          parent: ___iced_passed_deferral,
+          filename: "/Users/will/Dropbox/medderschedule/scripts/schedule_scripts2.iced",
+          funcname: "postAndRefresh"
+        });
+        $.post(event.target, "", __iced_deferrals.defer({
+          assign_fn: (function() {
+            return function() {
+              response_data = arguments[0];
+              status = arguments[1];
+              return xhr = arguments[2];
+            };
+          })(),
+          lineno: 31
+        }));
+        __iced_deferrals._fulfill();
+      })(function() {
+        console.log('Post and refresh');
+        return FullRerender(response_data);
+      });
+    };
+    FullRerender = function(schedule) {
+      $("#schedule-container").html(ich.schedule(schedule));
+      $(".item-more-link").click(postAndRefresh);
+      $(".item-less-link").click(postAndRefresh);
+      $(".item-remove-link").click(postAndRefresh);
+      return $("#add-subject-form").submit;
+    };
+    FullRerender(originalSchedule);
     return $("#check-enable-breaks").click(function() {
       var checked, post_data, response_data, status, url, xhr, ___iced_passed_deferral, __iced_deferrals,
         _this = this;
@@ -72,7 +171,7 @@
               return xhr = arguments[2];
             };
           })(),
-          lineno: 14
+          lineno: 48
         }));
         __iced_deferrals._fulfill();
       })(function() {

@@ -59,33 +59,6 @@ $(document).ready(function() {
 		name	  : 'name',
 	});
 	
-	var ajaxAndRefresh = function(event){
-		event.preventDefault();
-		$.ajax({
-			url: event.target,
-			success: function(data, status, xhr){
-                console.log('Called more/less link');
-				rerender(data);
-            },
-		});
-	};
-	$(".item-more-link").click(ajaxAndRefresh);
-	$(".item-less-link").click(ajaxAndRefresh);
-	
-	$(".item-remove-link").click(function(event){
-		event.preventDefault();
-		var uri = event.target.href;
-		var anchor = $(this);
-		$.ajax({
-			url: uri,
-			success: function(data, status, xhr){
-                console.log('Called remove link');
-				anchor.parents('.item-row').remove();
-				rerender(data);
-            },
-		});
-	});
-	
 	if( window.webkitNotifications ) {
 		$('#check-enable-notifications').click(function(){
 			if($('#check-enable-notifications').attr('checked')) {
@@ -102,28 +75,4 @@ $(document).ready(function() {
 			}
 		});
 	}
-	
-	var timePickerClosed = function(time, picker){
-		console.log(picker.id + " set to " + time);
-		var start_time = $('#start-time-picker').val();
-		var end_time = $('#end-time-picker').val()
-		console.log("Start: " + start_time + " End: " + end_time)
-		$.ajax({
-			url: '/schedule/' + scheduleKey + '/edit',
-			data: { start_time: start_time, end_time: end_time },
-			processData: true,
-			success: function(data, status, xhr){
-				console.log('Edit complete.');
-				rerender(data);
-			},
-		});
-	};
-	var options = {
-		showPeriod: true,
-		showLeadingZero: false,
-		showMinutesLeadingZero: false,
-		onClose: timePickerClosed,
-	};
-	$('#start-time-picker').timepicker(options);
-	$('#end-time-picker').timepicker(options);
 });

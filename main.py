@@ -202,6 +202,7 @@ class ViewSchedule(BaseRequestHandler):
                 'logout_link' : users.create_logout_url(self.request.uri),
                 'start_time' : schedule.start_time.strftime(TIME_FORMAT_STRING),
                 'end_time' : schedule.end_time.strftime(TIME_FORMAT_STRING),
+                'break_time' : schedule.break_time_sec / 60,
                 'user_name' : users.get_current_user().nickname() if has_user else None,
             }
             self.return_template('schedule.html', template_values)
@@ -292,6 +293,8 @@ class EditSchedule(BaseRequestHandler):
             schedule.start_time = self.parse_time(self.request.get("start_time"))            
         if self.valid(self.request.get("end_time")):
             schedule.end_time = self.parse_time(self.request.get("end_time"))
+        if self.valid(self.request.get("break_time_minutes")):
+            schedule.break_time_sec = int(self.request.get("break_time_minutes")) * 60
         
         schedule.put()
         self.return_json(GetJsonableSchedule(schedule))

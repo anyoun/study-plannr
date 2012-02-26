@@ -71,6 +71,13 @@
   border-bottom: 1px solid black;
 }
 
+.editable-text {
+  border-bottom: dotted black 1px;
+  &:hover {
+    background: yellow;
+  }
+}
+
 .subject-label {
   position: relative;
   top: -.5em;
@@ -90,5 +97,12 @@
   input {
     margin: 0px;
     padding: 0px;
+  }
+}
+.break-time-editing {
+  display: inline;
+  width: 5em;
+  input {
+    width: 50px;
   }
 }

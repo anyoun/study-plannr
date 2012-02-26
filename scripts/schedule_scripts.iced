@@ -78,6 +78,21 @@ $ ->
 				width: 'none'
 			}
 
+		#Add current time
+		#currentTime = new Date(2012, 2, 26, 12, 5, 0)
+		currentTime = new Date()
+		currentSeconds = currentTime.getHours() * 3600 + currentTime.getMinutes() * 60 + currentTime.getSeconds()
+		if currentSeconds < schedule.end_time_sec and currentSeconds > schedule.start_time_sec
+			totalSeconds = schedule.end_time_sec - schedule.start_time_sec
+			percentage = (currentSeconds - schedule.start_time_sec) / totalSeconds * 100
+			m = $("<div style=\"border-bottom: black 3px solid;position:relative;top:#{percentage}%;\"/>")
+			$('#marker-container').children().remove()
+			$('#marker-container').append(m)
+			pad = (n) -> if n < 10 then "0#{n}" else "#{n}"
+			formattedTime = pad(currentTime.getHours()) + ":" + pad(currentTime.getMinutes())
+			m.append("<div style=\"float:left;\">#{formattedTime}</div>")
+		
+
 	FullRerender originalSchedule
 	
 	$("#check-enable-breaks").click ->
@@ -95,4 +110,4 @@ $ ->
 					await window.webkitNotifications.requestPermission
 				popup = window.webkitNotifications.createNotification("/images/logo.png", "title", "body");
 				popup.show()
-				window.setTimeout( ( -> popup.cancel() ), 1000 )
+				window.setTimeout( ( -> popup.cancel() ), 1000 ) 

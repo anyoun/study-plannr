@@ -178,12 +178,13 @@
       });
     };
     FullRerender = function(schedule) {
+      var currentSeconds, currentTime, formattedTime, m, pad, percentage, totalSeconds;
       $('#schedule-container').html(ich.schedule(schedule));
       $('.item-more-link').click(postAndRefresh);
       $('.item-less-link').click(postAndRefresh);
       $('.item-remove-link').click(postAndRefresh);
       $('#add-subject-form').submit('');
-      return $('.subject-name').each(function(i, subjectName) {
+      $('.subject-name').each(function(i, subjectName) {
         subjectName = $(subjectName);
         return subjectName.editable('/schedule/' + scheduleKey + '/' + subjectName.attr('data-key') + '/rename', {
           tooltip: 'Click to change subject name.',
@@ -193,6 +194,24 @@
           width: 'none'
         });
       });
+      currentTime = new Date();
+      currentSeconds = currentTime.getHours() * 3600 + currentTime.getMinutes() * 60 + currentTime.getSeconds();
+      if (currentSeconds < schedule.end_time_sec && currentSeconds > schedule.start_time_sec) {
+        totalSeconds = schedule.end_time_sec - schedule.start_time_sec;
+        percentage = (currentSeconds - schedule.start_time_sec) / totalSeconds * 100;
+        m = $("<div style=\"border-bottom: black 3px solid;position:relative;top:" + percentage + "%;\"/>");
+        $('#marker-container').children().remove();
+        $('#marker-container').append(m);
+        pad = function(n) {
+          if (n < 10) {
+            return "0" + n;
+          } else {
+            return "" + n;
+          }
+        };
+        formattedTime = pad(currentTime.getHours()) + ":" + pad(currentTime.getMinutes());
+        return m.append("<div style=\"float:left;\">" + formattedTime + "</div>");
+      }
     };
     FullRerender(originalSchedule);
     $("#check-enable-breaks").click(function() {
@@ -217,7 +236,7 @@
               return xhr = arguments[2];
             };
           })(),
-          lineno: 87
+          lineno: 102
         }));
         __iced_deferrals._fulfill();
       })(function() {

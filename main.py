@@ -35,6 +35,8 @@ ADD_FAKE_DELAYS = False
 
 def time_diff(x, y):
     return 3600*(x.hour-y.hour) + 60*(x.minute-y.minute) + x.second-y.second
+def to_seconds(x):
+    return 3600*x.hour + 60*x.minute + x.second
 def add_time(t, delta_seconds):
     total_seconds = time_diff(t, time(0)) + delta_seconds
     td_hours = total_seconds // 3600
@@ -132,6 +134,8 @@ def GetJsonableSchedule(schedule):
         'scheduleKey' : str(schedule.key()),
         'start_time' : start_time.strftime(TIME_FORMAT_STRING),
         'end_time' : end_time.strftime(TIME_FORMAT_STRING),
+        'start_time_sec' : to_seconds(start_time),
+        'end_time_sec' : to_seconds(end_time),
     }
     return schedule_json
 

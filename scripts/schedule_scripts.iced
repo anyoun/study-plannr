@@ -103,11 +103,11 @@ $ ->
 		console.log "Changed enable-breaks"
 		FullRerender response_data
 
-	if window.webkitNotifications
-		$('#check-enable-notifications').click ->
-			if $('#check-enable-notifications').attr('checked')
-				if window.webkitNotifications.checkPermission() != 0
-					await window.webkitNotifications.requestPermission
-				popup = window.webkitNotifications.createNotification("/images/logo.png", "title", "body");
-				popup.show()
-				window.setTimeout( ( -> popup.cancel() ), 1000 ) 
+	# if window.webkitNotifications
+	# 	$('#check-enable-notifications').click ->
+	# 		if $('#check-enable-notifications').attr('checked')
+	# 			if window.webkitNotifications.checkPermission() != 0
+	# 				await window.webkitNotifications.requestPermission
+	# 			popup = window.webkitNotifications.createNotification("/images/logo.png", "title", "body");
+	# 			popup.show()
+	# 			window.setTimeout( ( -> popup.cancel() ), 1000 ) 
